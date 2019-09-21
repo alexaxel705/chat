@@ -1,16 +1,27 @@
-﻿local Avatars = {}
-local AvatarW, AvatarH = 60, 30
-local Chat = {}
+﻿local Chat = {}
 local screenWidth, screenHeight = guiGetScreenSize()
 local scale = (screenWidth/1920)+(screenHeight/1080)
 local scalex = (screenWidth/1920)
 local scaley = (screenHeight/1080)
 local ChatImage = false
-local ChatW, ChatH = 700*scale, 130*scale
+local ChatW, ChatH = 700*scale, 150*scale
 local ChatAlpha = 255
 local HiddenChatTimer = false
+local Avatars = {}
+local AvatarW, AvatarH = 60*scale, 30*scale
 local input = false
+local SpawnMessage = true
 showChat(false)
+
+
+
+
+
+
+
+
+
+
 
 function onClientGotImage(thePlayer, Avatar)
 	if(getElementType(thePlayer) == "player") then
@@ -46,19 +57,26 @@ function DrawChat()
 		dxSetBlendMode("modulate_add")
 		
 		local count = 1
+		local countsize = AvatarH
+		local th = dxGetFontHeight(scale, "default-bold")
 		for i = #Chat, #Chat-4, -1 do
 			if(Chat[i]) then
 				count = count+1
-				dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(2*scale), ChatH-((20*scale)*count)+(scale), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
+				local avasize = AvatarH -- Пока идет загрузка аватарки
+				
 				if(Avatars[Chat[i][2]]) then
-					dxDrawImage((AvatarW-(Avatars[Chat[i][2]][1]*scale))/2, ChatH-((20*scale)*count), Avatars[Chat[i][2]][1]*scale, Avatars[Chat[i][2]][2]*scale, Avatars[Chat[i][2]][3])
+					avasize = Avatars[Chat[i][2]][2]
+					dxDrawImage((AvatarW-(Avatars[Chat[i][2]][1])), ChatH-countsize-avasize, Avatars[Chat[i][2]][1], Avatars[Chat[i][2]][2], Avatars[Chat[i][2]][3])
 				end
+				dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(5*scale), ChatH-countsize-(avasize/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
+				
+				countsize = countsize+avasize
 			end
 		end
 	
-		if(input) then		
-			dxDrawRectangle(0, ChatH-((20*scale)*1)+(scale), 400*scale, 30*scale, tocolor ( 0, 0, 0, 150 ) )
-			dxDrawBorderedText("Сказать: "..input, 5*scale, ChatH-((20*scale)*1)+(scale), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
+		if(input) then
+			dxDrawRectangle(0, ChatH-(AvatarH), 400*scale, AvatarH-2, tocolor(0, 0, 0, 150))
+			dxDrawBorderedText("Сказать: "..input, 5*scale, ChatH-(AvatarH/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
 		end
 	
 		dxSetBlendMode("blend")
@@ -70,7 +88,7 @@ end
 
 
 function avatardraw()
-	dxDrawImage(590*scalex, 640*scaley, ChatW, ChatH, DrawChat(), 0, 0, 0, tocolor(255, 255, 255, ChatAlpha))
+	dxDrawImage(550*scalex, 580*scaley, ChatW, ChatH, DrawChat(), 0, 0, 0, tocolor(255, 255, 255, ChatAlpha))
 	
 	if(not HiddenChatTimer and not input) then
 		ChatAlpha = ChatAlpha-2
@@ -182,5 +200,20 @@ function openinput()
 	end
 end
 bindKey("t", "down", openinput)
+
+
+
+
+
+
+function Spawn()
+	if(SpawnMessage) then
+		OutputChat("Используй клавишу T чтобы писать в чат", "Server")
+		SpawnMessage = false
+	end
+end
+addEventHandler("onClientPlayerSpawn", getLocalPlayer(), Spawn)
+
+
 
 

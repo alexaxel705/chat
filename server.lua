@@ -350,16 +350,23 @@ addEventHandler("CheckAvatar", getRootElement(), CheckAvatar)
 function OutputChat(thePlayer, message, from)
 	triggerClientEvent(thePlayer, "OutputChat", thePlayer, message, from)
 end
+addEvent("OutputChat", true)
+addEventHandler("OutputChat", getRootElement(), OutputChat)
 
 
 
-function OutputMainChat(message, from)
+
+function OutputMainChat(message, from, forced)
 	for _, thePlayer in pairs(getElementsByType "player") do
-		if(MainChat[thePlayer]) then
+		if(MainChat[thePlayer] or forced) then
 			triggerClientEvent(thePlayer, "OutputChat", thePlayer, message, from)
 		end
 	end
 end
+addEvent("OutputMainChat", true)
+addEventHandler("OutputMainChat", getRootElement(), OutputMainChat)
+
+
 
 function checkChange(theKey, oldValue, newValue)
 	if(getElementType(source) == "player") then

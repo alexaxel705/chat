@@ -6,4 +6,6 @@
 	
 	<export function='BurnChatMSG' type="server" http='true' />
 	<export function='UPDOnline' type="server" http='true' />
+	<export function='OutputMainChat' type="server" http='true' />
+	<export function='OutputChat' type="server" http='true' />
 </meta>
