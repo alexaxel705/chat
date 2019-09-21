@@ -15,14 +15,6 @@ showChat(false)
 
 
 
-
-
-
-
-
-
-
-
 function onClientGotImage(thePlayer, Avatar)
 	if(getElementType(thePlayer) == "player") then
 		thePlayer = getPlayerName(thePlayer)
@@ -32,13 +24,16 @@ function onClientGotImage(thePlayer, Avatar)
 	local w,h = dxGetMaterialSize(image)
 	
 	local maxn = 0
+	local maxi = 0
 	if(w/AvatarW >= h/AvatarH) then
 		maxn = AvatarW
+		maxi = w
 	else
 		maxn = AvatarH
+		maxi = h
 	end
 	
-	local sizea, sizeb = w/maxn, w/maxn
+	local sizea, sizeb = maxi/maxn, maxi/maxn
 		
 	
 	Avatars[thePlayer] = {w/sizea, h/sizeb, image}
@@ -104,6 +99,7 @@ function OutputChat(message, from)
 		from = getPlayerName(from)
 	end
 	Chat[#Chat+1] = {message, from}
+	outputConsole(from..": "..message)
 	ChatImage = false
 	ChatAlpha = 255
 	
@@ -217,3 +213,7 @@ addEventHandler("onClientPlayerSpawn", getLocalPlayer(), Spawn)
 
 
 
+function remotePlayerJoin()
+	Avatars[getPlayerName(source)] = nil
+end
+addEventHandler("onClientPlayerJoin", getRootElement(), remotePlayerJoin)

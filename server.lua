@@ -371,6 +371,7 @@ addEventHandler("OutputMainChat", getRootElement(), OutputMainChat)
 function checkChange(theKey, oldValue, newValue)
 	if(getElementType(source) == "player") then
 		if(theKey == "auth") then
+			Avatars[getPlayerName(source)] = nil
 			SendWebPlayer()
 		end
 	end
