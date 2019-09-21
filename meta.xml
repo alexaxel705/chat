@@ -1,0 +1,9 @@
+<meta>
+	<info name="chat" version="1.0.0" type="script" author="alexaxel705" description="chat"/>
+	
+	<script src="client.lua" type="client"/>
+	<script src="server.lua" type="server"/>
+	
+	<export function='BurnChatMSG' type="server" http='true' />
+	<export function='UPDOnline' type="server" http='true' />
+</meta>
