@@ -1,1 +1,186 @@
-﻿
+﻿local Avatars = {}
+local AvatarW, AvatarH = 60, 30
+local Chat = {}
+local screenWidth, screenHeight = guiGetScreenSize()
+local scale = (screenWidth/1920)+(screenHeight/1080)
+local scalex = (screenWidth/1920)
+local scaley = (screenHeight/1080)
+local ChatImage = false
+local ChatW, ChatH = 700*scale, 130*scale
+local ChatAlpha = 255
+local HiddenChatTimer = false
+local input = false
+showChat(false)
+
+function onClientGotImage(thePlayer, Avatar)
+	if(getElementType(thePlayer) == "player") then
+		thePlayer = getPlayerName(thePlayer)
+	end
+	
+	local image = dxCreateTexture(Avatar)
+	local w,h = dxGetMaterialSize(image)
+	
+	local maxn = 0
+	if(w/AvatarW >= h/AvatarH) then
+		maxn = AvatarW
+	else
+		maxn = AvatarH
+	end
+	
+	local sizea, sizeb = w/maxn, w/maxn
+		
+	
+	Avatars[thePlayer] = {w/sizea, h/sizeb, image}
+	
+	ChatImage = false
+end
+addEvent("onClientGotImage", true)
+addEventHandler("onClientGotImage", getRootElement(), onClientGotImage)
+
+
+
+function DrawChat()
+	if(not ChatImage) then
+		ChatImage = dxCreateRenderTarget(ChatW, ChatH, true)
+		dxSetRenderTarget(ChatImage, true)
+		dxSetBlendMode("modulate_add")
+		
+		local count = 1
+		for i = #Chat, #Chat-4, -1 do
+			if(Chat[i]) then
+				count = count+1
+				dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(2*scale), ChatH-((20*scale)*count)+(scale), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
+				if(Avatars[Chat[i][2]]) then
+					dxDrawImage((AvatarW-(Avatars[Chat[i][2]][1]*scale))/2, ChatH-((20*scale)*count), Avatars[Chat[i][2]][1]*scale, Avatars[Chat[i][2]][2]*scale, Avatars[Chat[i][2]][3])
+				end
+			end
+		end
+	
+		if(input) then		
+			dxDrawRectangle(0, ChatH-((20*scale)*1)+(scale), 400*scale, 30*scale, tocolor ( 0, 0, 0, 150 ) )
+			dxDrawBorderedText("Сказать: "..input, 5*scale, ChatH-((20*scale)*1)+(scale), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
+		end
+	
+		dxSetBlendMode("blend")
+		dxSetRenderTarget()
+	end
+	return ChatImage
+end
+
+
+
+function avatardraw()
+	dxDrawImage(590*scalex, 640*scaley, ChatW, ChatH, DrawChat(), 0, 0, 0, tocolor(255, 255, 255, ChatAlpha))
+	
+	if(not HiddenChatTimer and not input) then
+		ChatAlpha = ChatAlpha-2
+		if(ChatAlpha <= 0) then
+			Chat = {}
+			removeEventHandler("onClientHUDRender", root, avatardraw)
+		end
+	end
+end
+
+function OutputChat(message, from)
+	if(getElementType(from) == "player") then
+		from = getPlayerName(from)
+	end
+	Chat[#Chat+1] = {message, from}
+	ChatImage = false
+	ChatAlpha = 255
+	
+	
+	if(HiddenChatTimer) then
+		resetTimer(HiddenChatTimer)
+	else
+		addEventHandler("onClientHUDRender", root, avatardraw)
+		HiddenChatTimer = setTimer(function() HiddenChatTimer = false end, 2000, 1)
+	end
+	
+	if(not Avatars[from]) then
+		triggerServerEvent("CheckAvatar", localPlayer, localPlayer, from)
+	end
+end
+addEvent("OutputChat", true)
+addEventHandler("OutputChat", getRootElement(), OutputChat)
+
+
+
+
+function math.round(number, decimals, method)
+    decimals = decimals or 0
+    local factor = 10 ^ decimals
+    if (method == "ceil" or method == "floor") then return math[method](number * factor) / factor
+    else return tonumber(("%."..decimals.."f"):format(number)) end
+end
+
+
+function dxDrawBorderedText(text, left, top, right, bottom, color, scale, font, alignX, alignY, clip, wordBreak, postGUI, colorCoded, subPixelPositioning)
+	if(text) then
+		local r,g,b = bitExtract(color, 0, 8), bitExtract(color, 8, 8), bitExtract(color, 16, 8)
+		if(r+g+b >= 100) then r = 0 g = 0 b = 0 else r = 255 g = 255 b = 255 end
+		local textb = string.gsub(text, "#%x%x%x%x%x%x", "")
+		local locsca = math.round(scale, 0)
+		if (locsca == 0) then locsca = 1 end
+		for oX = -locsca, locsca do 
+			for oY = -locsca, locsca do 
+				dxDrawText(textb, left + oX, top + oY, right + oX, bottom + oY, tocolor(r, g, b, bitExtract(color, 24, 8)), scale, font, alignX, alignY, clip, wordBreak,postGUI,false)
+			end
+		end
+
+		dxDrawText(text, left, top, right, bottom, color, scale, font, alignX, alignY, clip, wordBreak, postGUI, true)
+	end
+end
+
+function playerPressedKey(button, press)
+    if (press) then
+        if(button == "escape") then
+			openinput()
+		elseif(button == "enter" or button == "num_enter") then
+			if(utf8.sub(input, 1, 1) == "/") then
+				executeCommandHandler(unpack(split(utf8.remove(input, 0, 1), ' ')))
+			else
+				triggerServerEvent("CliendSideonPlayerChat", localPlayer, input, 0)
+			end
+			openinput()
+		elseif(button == "backspace") then
+			input = utf8.remove(input, -1, -1)
+			ChatImage = false
+		end
+		cancelEvent()
+    end
+end
+
+function outputPressedCharacter(character)
+	if(input == false) then 
+		input = ""
+		if(not HiddenChatTimer) then
+			addEventHandler("onClientHUDRender", root, avatardraw)
+		end
+		return true
+	end
+	
+	input = input..character
+	ChatImage = false
+end
+
+
+function openinput()
+	ChatAlpha = 255
+	if(input) then
+		input = false
+		ChatImage = false
+		removeEventHandler("onClientCharacter", getRootElement(), outputPressedCharacter)
+		removeEventHandler("onClientKey", root, playerPressedKey)
+		bindKey("t", "down", openinput)
+	else		
+		input = false
+		ChatImage = false
+		addEventHandler("onClientCharacter", getRootElement(), outputPressedCharacter)
+		addEventHandler("onClientKey", root, playerPressedKey)
+		unbindKey("t", "down", openinput)
+	end
+end
+bindKey("t", "down", openinput)
+
+

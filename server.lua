@@ -4,13 +4,8 @@ local Zones = {
 	[1] = createColRectangle(1441, -1721, 77, 117),
 	[2] = createColRectangle(-2364, 72, 79, 155),
 	[3] = createColRectangle(2298, 2244, 119, 159),
-	
 	[4] = createColRectangle(-2594, -60, 42, 89.5),
-	
-	
-	
-	
-	
+	[5] = createColRectangle(-2740, 345, 67.5, 61),
 }
 for _,el in pairs(Zones) do
 	setElementData(el, "chat", true, false)
@@ -198,11 +193,12 @@ function onPlayerChat(message, messageType, messagenovision)
 						if dist <= 20 then
 							triggerClientEvent(player, "PlayerSayEvent", player, message, source)
 							
-							outputChatBox(getPlayerName(source).."["..getElementData(source, "id").."]: "..message, player, 200-(dist*5),200-(dist*5),200-(dist*5),true)
-								
-							if(not help[source]) then
-								triggerClientEvent(source, "ToolTip", source, "#CCCCCCCообщения видны в радиусе 20м\nОбщий чат доступен в зонах отдыха")
-								help[source] = true
+							if(not messagenovision) then -- Для действий
+								OutputChat(player, message, source)
+								if(not help[source]) then
+									triggerClientEvent(source, "ToolTip", source, "#CCCCCCCообщения видны в радиусе 20м\nОбщий чат доступен в зонах отдыха")
+									help[source] = true
+								end
 							end
 						end
 					end
@@ -214,7 +210,7 @@ function onPlayerChat(message, messageType, messagenovision)
 		
 					if(not messagenovision) then
 						callRemote("http://109.227.228.4/engine/include/MTA/index.php", ResultGet, getPlayerName(source):gsub('#%x%x%x%x%x%x', ''), message, color)
-						outputChatBox(color..getPlayerName(source):gsub('#%x%x%x%x%x%x', '')..": #EEEEEE"..message, getRootElement(), 255, 255, 255, true)
+						OutputMainChat(message, source)
 					end
 					cancelEvent()
 					return true
@@ -258,7 +254,7 @@ function Chat_Enter(thePlayer, matchingDimension)
 	if getElementType(thePlayer) == "player" then
 		if(getElementData(source, "chat")) then
 			MainChat[thePlayer] = true
-			triggerClientEvent(thePlayer, "helpmessageEvent", thePlayer, "Ты зашел в зону общего чата")
+			OutputChat(thePlayer, "ты зашел в зону общего чата", "Server")
 			
 			SendWebPlayer()
 			callRemote("http://109.227.228.4/engine/include/MTA/get_online.php", ResultGet)
@@ -271,8 +267,7 @@ function Chat_Exit(thePlayer, matchingDimension)
 	if getElementType(thePlayer) == "player" then
 		if(getElementData(source, "chat")) then
 			MainChat[thePlayer] = false
-			triggerClientEvent(thePlayer, "helpmessageEvent", thePlayer, "Ты покинул зону общего чата")
-			
+			OutputChat(thePlayer, "ты покинул зону общего чата", "Server")
 			SendWebPlayer()
 			callRemote("http://109.227.228.4/engine/include/MTA/get_online.php", ResultGet)
 		end
@@ -283,7 +278,7 @@ addEventHandler("onColShapeLeave", getRootElement(), Chat_Exit)
 
 
 function BurnChatMSG(name, message, nickcolor)
-	outputChatBox(nickcolor..name..": #FFFFFF"..message, getRootElement(), 255, 255, 255, true)
+	OutputMainChat(message, name)
 end
 addEvent("BurnChatMSG", true)
 addEventHandler("BurnChatMSG", getRootElement(), BurnChatMSG)
@@ -291,21 +286,15 @@ addEventHandler("BurnChatMSG", getRootElement(), BurnChatMSG)
 
 
 
-
-
-
 function SendWebPlayer()
 	if(getServerPort() == 22003) then
 		local webplay = ''
-		for theKey,thePlayer in ipairs(getElementsByType("player")) do
+		for _, thePlayer in ipairs(getElementsByType("player")) do
 			if(getElementData(thePlayer, "auth")) then
-				local color = getElementData(thePlayer, "color") or "#EEEEEE"
-				local notinchat = ""
-				if(not MainChat[thePlayer]) then
-					notinchat = " [Не в чате]"
+				if(MainChat[thePlayer]) then
+					local color = getElementData(thePlayer, "color") or "#EEEEEE"
+					webplay = webplay.."<span style=\"color:"..color..";\">"..getPlayerName(thePlayer)..'</span><br />'
 				end
-				webplay = webplay.."<span style=\"color:"..color..";\">"..getPlayerName(thePlayer)..notinchat..'</span><br />'
-				
 			end
 		end
 		callRemote("http://109.227.228.4/engine/include/MTA/online.php", ResultGet, webplay)
@@ -313,7 +302,73 @@ function SendWebPlayer()
 end
 
 
+function Start()
+	for _, thePlayer in ipairs(getElementsByType("player")) do
+		if(getElementData(thePlayer, "auth")) then
+			for _,el in pairs(Zones) do
+				if(isElementWithinColShape(thePlayer, el)) then
+					MainChat[thePlayer] = true
+				end
+			end
+		end
+	end
+	SendWebPlayer()
+end
+addEventHandler("onResourceStart", getResourceRootElement(), Start)
 
+
+local Avatars = {}
+
+function DownloadPhotoCompleted(responseData, errno, dat)
+	if errno == 0 then
+		triggerClientEvent(dat[1], "onClientGotImage", dat[1], dat[2], responseData)
+		Avatars[dat[2]] = responseData
+	end
+end
+
+
+function DownloadPhoto(responseData, errno, dat)
+	if errno == 0 then
+		fetchRemote("http://109.227.228.4/database/users/"..dat[2].."/photo/"..responseData, DownloadPhotoCompleted, "", false, dat)
+	else
+		fetchRemote("http://109.227.228.4/engine/images/no_photo.jpg", DownloadPhotoCompleted, "", false, dat)
+	end
+end
+
+
+function CheckAvatar(thePlayer, theAvatar)
+	if(not Avatars[theAvatar]) then
+		fetchRemote("http://109.227.228.4/database/users/"..theAvatar.."/photo.txt", DownloadPhoto, "", false, {thePlayer, theAvatar})
+	else
+		triggerClientEvent(thePlayer, "onClientGotImage", thePlayer, theAvatar, Avatars[theAvatar])
+	end
+end
+addEvent("CheckAvatar", true)
+addEventHandler("CheckAvatar", getRootElement(), CheckAvatar)
+
+
+function OutputChat(thePlayer, message, from)
+	triggerClientEvent(thePlayer, "OutputChat", thePlayer, message, from)
+end
+
+
+
+function OutputMainChat(message, from)
+	for _, thePlayer in pairs(getElementsByType "player") do
+		if(MainChat[thePlayer]) then
+			triggerClientEvent(thePlayer, "OutputChat", thePlayer, message, from)
+		end
+	end
+end
+
+function checkChange(theKey, oldValue, newValue)
+	if(getElementType(source) == "player") then
+		if(theKey == "auth") then
+			SendWebPlayer()
+		end
+	end
+end
+addEventHandler("onElementDataChange", root, checkChange)
 
 
 function CheckVoice(voice, voicebank)
