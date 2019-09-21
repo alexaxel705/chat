@@ -1,7 +1,16 @@
 ﻿local help = {}
 local MainChat = {}
 local Zones = {
-	[1] = createColRectangle(1441, -1721, 77, 117)   
+	[1] = createColRectangle(1441, -1721, 77, 117),
+	[2] = createColRectangle(-2364, 72, 79, 155),
+	[3] = createColRectangle(2298, 2244, 119, 159),
+	
+	[4] = createColRectangle(-2594, -60, 42, 89.5),
+	
+	
+	
+	
+	
 }
 for _,el in pairs(Zones) do
 	setElementData(el, "chat", true, false)
