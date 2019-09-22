@@ -26,40 +26,40 @@ function CallPhones(thePlayer, _, h)
 							CallIn(thePlayer)
 							PhonesTo[thePlayer] = thePlayers
 							PhonesWaiting[thePlayers] = thePlayer
-							OutputChat(thePlayer, "Напиши /call чтобы бросить трубку", "Server")
-							OutputChat(thePlayers, "Напиши /call чтобы взять трубку", "Server")
+							OutputChat(thePlayer, "Напиши /call чтобы бросить трубку", "Phone")
+							OutputChat(thePlayers, "Напиши /call чтобы взять трубку", "Phone")
 							triggerClientEvent(thePlayer, "PlaySFXSoundEvent", thePlayer, 12)
 							triggerClientEvent(thePlayers, "PlaySFXSoundEvent", thePlayers, 13)
 							return true
 						else
-							OutputChat(thePlayer, "* Абонент занят", "Server")
+							OutputChat(thePlayer, "* Абонент занят", "Phone")
 							return true
 						end
 					end
 				end
-				OutputChat(thePlayer, "* "..h.." Номер не найден", "Server")
+				OutputChat(thePlayer, "* "..h.." Номер не найден", "Phone")
 			else
-				OutputChat(thePlayer, "* Абонент занят", "Server")
+				OutputChat(thePlayer, "* Абонент занят", "Phone")
 			end
 		else
 			if(PhonesWaiting[thePlayer]) then
 				CallIn(thePlayer)
-				OutputChat(PhonesWaiting[thePlayer], "* Абонент взял трубку", "Server")
+				OutputChat(PhonesWaiting[thePlayer], "* Абонент взял трубку", "Phone")
 				PhonesTo[thePlayer] = PhonesWaiting[thePlayer]
 			else
-				OutputChat(thePlayer, "Используй /call id игрока чтобы позвонить", "Server")
-				OutputChat(thePlayer, "Напиши /call чтобы бросить трубку", "Server")
+				OutputChat(thePlayer, "Используй /call id игрока чтобы позвонить", "Phone")
+				OutputChat(thePlayer, "Напиши /call чтобы бросить трубку", "Phone")
 			end
 		end
 	else
-		CallOut(thePlayer)
 		if(Phones[PhonesTo[thePlayer]]) then
 			CallOut(PhonesTo[thePlayer])
-			OutputChat(PhonesTo[thePlayer], "* Абонент положил трубку", "Server")
+			OutputChat(PhonesTo[thePlayer], "* Абонент положил трубку", "Phone")
 		end
 		if(PhonesWaiting[PhonesTo[thePlayer]]) then
 			PhonesWaiting[PhonesTo[thePlayer]] = nil
 		end
+		CallOut(thePlayer)
 	end
 end
 addEvent("call", true)
@@ -68,26 +68,18 @@ addEventHandler("call", root, CallPhones)
 
 
 function CallIn(thePlayer)
-	--SetControls(thePlayer, "phone", {["fire"] = true, ["action"] = true, ["jump"] = true, ["sprint"] = true})
-
-	--StartAnimation(thePlayer, "ped", "phone_in", 1, false, true, true, true)
+	setPedAnimation(thePlayer, "ped", "phone_in", 1, false, true, true, true)
 	Phones[thePlayer] = true
-	--AddPlayerArmas(thePlayer, 330)
 end
 
 
 function CallOut(thePlayer)
-	--SetControls(thePlayer, "phone", {["fire"] = false, ["action"] = false, ["jump"] = false, ["sprint"] = false})
-
-	--StartAnimation(thePlayer, "ped", "phone_out", 1, false, true, true, true)
-	setTimer(function()
-		--RemovePlayerArmas(thePlayer, 330)
-		Phones[thePlayer] = false
-		PhonesTo[thePlayer] = false
-		if(PhonesWaiting[thePlayer]) then
-			PhonesWaiting[thePlayer] = nil
-		end
-	end, 2000, 1)
+	setPedAnimation(thePlayer, "ped", "phone_out", 1, false, true, true, true)
+	Phones[thePlayer] = false
+	PhonesTo[thePlayer] = false
+	if(PhonesWaiting[thePlayer]) then
+		PhonesWaiting[thePlayer] = nil
+	end
 end
 
 
@@ -137,7 +129,7 @@ function PhoneTalkEnd(thePlayer, bandit)
 			PoliceCallRemove(x,y,z,"Обнаружен преступник")
 		else
 			outputChatBox("Полиции уже известно о положении преступника.", thePlayer)
-			--StartAnimation(thePlayer, "ped", "phone_out", false,false,false,false)
+			setPedAnimation(thePlayer, "ped", "phone_out", false,false,false,false)
 		end
 	end
 end
@@ -159,15 +151,15 @@ function onPlayerChat(message, messageType, messagenovision)
 		if messageType == 0 then
 			if(Phones[source]) then
 				local CallTo = PhonesTo[source]
-				OutputChat(source, "(ТЕЛЕФОН) ["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, "Server")
+				OutputChat(source, "["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, "Phone")
 				if(getPedOccupiedVehicle(source)) then
-					--StartAnimation(source, "ped", "phone_talk", false,false,false,false)
+					setPedAnimation(source, "ped", "phone_talk", false,false,false,false)
 				else
-					--StartAnimation(source, "ped", "phone_talk", 1, false, true, true, true)
+					setPedAnimation(source, "ped", "phone_talk", 1, false, true, true, true)
 				end
 	
 				if(Phones[CallTo]) then
-					OutputChat(CallTo, "(ТЕЛЕФОН) ["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, "Server")
+					OutputChat(CallTo, "["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, "Phone")
 				end
 				cancelEvent()
 				return true
@@ -210,20 +202,6 @@ function onPlayerChat(message, messageType, messagenovision)
 			cancelEvent()
 		elseif(messageType == 2) then
 			cancelEvent()
-			local hex = RGBToHex(getPlayerNametagColor(source))
-
-			local team = getPlayerTeam(source)
-			if not team then
-				return outputChatBox("Ты не состоишь в команде!", source, 255, 255, 255, true)
-			end
-
-			local members = getPlayersInTeam(team) or {}
-			for _, player in ipairs(members) do
-				outputChatBox("* Рация"..hex.." "..getPlayerName(source)..": #FFFFFF"..message, player, 255, 255, 255, true)
-			end
-			for key,thePlayers in pairs(getElementsByType "player") do
-				triggerClientEvent(thePlayers, "PlayerActionEvent", thePlayers, message, source)
-			end
 		end
 	else
 		outputChatBox("Авторизируйся чтобы написать сообщение", source,255,255,255,true)
@@ -234,6 +212,27 @@ addEvent("onPlayerChat", true)
 addEvent("CliendSideonPlayerChat", true)
 addEventHandler("onPlayerChat", getRootElement(), onPlayerChat)
 addEventHandler("CliendSideonPlayerChat", getRootElement(), onPlayerChat)
+
+
+
+
+
+
+function sms2(thePlayer, to, message)
+	if(to and message) then
+		for _, thePlayers in pairs(getElementsByType "player") do
+			if(tostring(getElementData(thePlayers, "id")) == tostring(to)) then
+				OutputChat(thePlayers, "от ["..getElementData(thePlayer, "id").."] "..getPlayerName(thePlayer)..": "..message, "SMS")
+				OutputChat(thePlayer, "для ["..getElementData(thePlayers, "id").."] "..getPlayerName(thePlayers)..": "..message.."", "SMS")
+			end
+		end
+	else
+		OutputChat(thePlayer, "Используй /sms id игрока текст", "Phone")
+	end
+end
+addEvent("sms", true)
+addEventHandler("sms", root, sms2)
+
 
 
 

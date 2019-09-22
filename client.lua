@@ -118,8 +118,8 @@ addEventHandler("OutputChat", getRootElement(), OutputChat)
 
 
 
-function call(_, id)
-	triggerServerEvent("call", localPlayer, localPlayer, _, id)
+function call(command, id)
+	triggerServerEvent("call", localPlayer, localPlayer, command, id)
 end
 addCommandHandler("call", call)
 
@@ -151,13 +151,33 @@ function dxDrawBorderedText(text, left, top, right, bottom, color, scale, font, 
 	end
 end
 
+function string.explode(self, separator)
+    if (#self == 0) then return {} end
+    if (#separator == 0) then return { self } end
+
+    return loadstring("return {\""..self:gsub(separator, "\",\"").."\"}")()
+end
+
 function playerPressedKey(button, press)
     if (press) then
         if(button == "escape") then
 			openinput()
 		elseif(button == "enter" or button == "num_enter") then
 			if(utf8.sub(input, 1, 1) == "/") then
-				executeCommandHandler(unpack(split(utf8.remove(input, 0, 1), ' ')))
+				local text = utf8.remove(input, 0, 1)
+				
+				local tables = string.explode(text, " ")
+				
+				if(tables[1] == "sms" or tables[1] == "pm") then
+					if(tables[4]) then
+						for i = 4, #tables do
+							tables[3] = tables[3].." "..tables[i]
+						end
+					end
+					triggerServerEvent("sms", localPlayer, localPlayer, tables[2], tables[3])
+				else
+					executeCommandHandler(unpack(tables))
+				end
 			else
 				triggerServerEvent("CliendSideonPlayerChat", localPlayer, input, 0)
 			end
