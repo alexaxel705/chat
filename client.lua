@@ -59,7 +59,7 @@ function DrawChat()
 				avasize = Avatars[Chat[i][2]][2]
 				dxDrawImage((AvatarW-(Avatars[Chat[i][2]][1])), ChatH-countsize-avasize, Avatars[Chat[i][2]][1], Avatars[Chat[i][2]][2], Avatars[Chat[i][2]][3])
 			end
-			dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(5*scale), ChatH-countsize-(avasize/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
+			dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(5*scale), ChatH-countsize-(avasize/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
 			
 			countsize = countsize+avasize
 		end
@@ -67,7 +67,7 @@ function DrawChat()
 	
 	if(input) then
 		dxDrawRectangle(0, ChatH-(AvatarH), 400*scale, AvatarH-2, tocolor(0, 0, 0, 150))
-		dxDrawBorderedText("Сказать: "..input, 5*scale, ChatH-(AvatarH/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
+		dxDrawBorderedText("Сказать: "..input, 5*scale, ChatH-(AvatarH/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
 	end
 	
 	dxSetBlendMode("blend")
@@ -142,11 +142,11 @@ function dxDrawBorderedText(text, left, top, right, bottom, color, scale, font, 
 		if (locsca == 0) then locsca = 1 end
 		for oX = -locsca, locsca do 
 			for oY = -locsca, locsca do 
-				dxDrawText(textb, left + oX, top + oY, right + oX, bottom + oY, tocolor(r, g, b, bitExtract(color, 24, 8)), scale, font, alignX, alignY, clip, wordBreak,postGUI,false)
+				dxDrawText(textb, left + oX, top + oY, right + oX, bottom + oY, tocolor(r, g, b, bitExtract(color, 24, 8)), scale, font, alignX, alignY, clip, wordBreak,postGUI, not getElementData(localPlayer, "LowPCMode"))
 			end
 		end
 
-		dxDrawText(text, left, top, right, bottom, color, scale, font, alignX, alignY, clip, wordBreak, postGUI, not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(text, left, top, right, bottom, color, scale, font, alignX, alignY, clip, wordBreak, postGUI, colorCoded, not getElementData(localPlayer, "LowPCMode"))
 	end
 end
 
