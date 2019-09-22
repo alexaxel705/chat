@@ -43,7 +43,6 @@ addEvent("onClientGotImage", true)
 addEventHandler("onClientGotImage", getRootElement(), onClientGotImage)
 
 
-
 function DrawChat()
 	dxSetRenderTarget(ChatImage, true)
 	dxSetBlendMode("modulate_add")
@@ -147,7 +146,7 @@ function dxDrawBorderedText(text, left, top, right, bottom, color, scale, font, 
 			end
 		end
 
-		dxDrawText(text, left, top, right, bottom, color, scale, font, alignX, alignY, clip, wordBreak, postGUI, true)
+		dxDrawText(text, left, top, right, bottom, color, scale, font, alignX, alignY, clip, wordBreak, postGUI, not getElementData(localPlayer, "LowPCMode"))
 	end
 end
 
