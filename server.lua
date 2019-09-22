@@ -191,7 +191,7 @@ function onPlayerChat(message, messageType, messagenovision)
 						local x2, y2, z2 = getElementPosition(player)
 						local dist = getDistanceBetweenPoints3D(x, y, z, x2, y2, z2)
 						if dist <= 20 then
-							triggerClientEvent(player, "PlayerSayEvent", player, message, source)
+							triggerClientEvent(player, "PlayerActionEvent", player, message, source)
 							
 							if(not messagenovision) then -- Для действий
 								OutputChat(player, message, source)
@@ -235,7 +235,7 @@ function onPlayerChat(message, messageType, messagenovision)
 				outputChatBox("* Рация"..hex.." "..getPlayerName(source)..": #FFFFFF"..message, player, 255, 255, 255, true)
 			end
 			for key,thePlayers in pairs(getElementsByType "player") do
-				triggerClientEvent(thePlayers, "PlayerSayEvent", thePlayers, message, source)
+				triggerClientEvent(thePlayers, "PlayerActionEvent", thePlayers, message, source)
 			end
 		end
 	else
