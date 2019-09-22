@@ -16,7 +16,7 @@ showChat(false)
 
 
 function onClientGotImage(thePlayer, Avatar)
-	if(getElementType(thePlayer) == "player") then
+	if(isElement(thePlayer)) then
 		thePlayer = getPlayerName(thePlayer)
 	end
 	
@@ -95,7 +95,7 @@ function avatardraw()
 end
 
 function OutputChat(message, from)
-	if(getElementType(from) == "player") then
+	if(isElement(from)) then
 		from = getPlayerName(from)
 	end
 	Chat[#Chat+1] = {message, from}
@@ -107,7 +107,9 @@ function OutputChat(message, from)
 	if(HiddenChatTimer) then
 		resetTimer(HiddenChatTimer)
 	else
-		addEventHandler("onClientHUDRender", root, avatardraw)
+		if(not isEventHandlerAdded("onClientHUDRender", root, avatardraw)) then
+			addEventHandler("onClientHUDRender", root, avatardraw)
+		end
 		HiddenChatTimer = setTimer(function() HiddenChatTimer = false end, 2000, 1)
 	end
 	
@@ -168,7 +170,7 @@ end
 function outputPressedCharacter(character)
 	if(input == false) then 
 		input = ""
-		if(not HiddenChatTimer) then
+		if(not isEventHandlerAdded("onClientHUDRender", root, avatardraw)) then
 			addEventHandler("onClientHUDRender", root, avatardraw)
 		end
 		return true
@@ -201,7 +203,6 @@ bindKey("t", "down", openinput)
 
 
 
-
 function Spawn()
 	if(SpawnMessage) then
 		OutputChat("Используй клавишу T чтобы писать в чат", "Server")
@@ -217,3 +218,25 @@ function remotePlayerJoin()
 	Avatars[getPlayerName(source)] = nil
 end
 addEventHandler("onClientPlayerJoin", getRootElement(), remotePlayerJoin)
+
+
+
+
+
+function isEventHandlerAdded(sEventName, pElementAttachedTo, func)
+	if 
+		type(sEventName) == 'string' and 
+		isElement(pElementAttachedTo) and 
+		type(func) == 'function' 
+	then
+		local aAttachedFunctions = getEventHandlers( sEventName, pElementAttachedTo )
+		if type(aAttachedFunctions) == 'table' and #aAttachedFunctions > 0 then
+			for i, v in ipairs( aAttachedFunctions ) do
+				if v == func then
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
