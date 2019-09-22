@@ -26,60 +26,62 @@ function CallPhones(thePlayer, _, h)
 							CallIn(thePlayer)
 							PhonesTo[thePlayer] = thePlayers
 							PhonesWaiting[thePlayers] = thePlayer
-							outputChatBox("Напиши /call чтобы бросить трубку", thePlayer, 255,255,255,true)
-							outputChatBox("Напиши /call чтобы взять трубку", thePlayers, 255,255,255,true)
+							OutputChat(thePlayer, "Напиши /call чтобы бросить трубку", "Server")
+							OutputChat(thePlayers, "Напиши /call чтобы взять трубку", "Server")
 							triggerClientEvent(thePlayer, "PlaySFXSoundEvent", thePlayer, 12)
 							triggerClientEvent(thePlayers, "PlaySFXSoundEvent", thePlayers, 13)
 							return true
 						else
-							outputChatBox("* Абонент занят", thePlayer, 255,255,255,true)
+							OutputChat(thePlayer, "* Абонент занят", "Server")
 							return true
 						end
 					end
 				end
-				outputChatBox("* "..h.." Номер не найден", thePlayer, 255,255,255,true)
+				OutputChat(thePlayer, "* "..h.." Номер не найден", "Server")
 			else
-				outputChatBox("* Абонент занят", thePlayer, 255,255,255,true) -- сам себе
+				OutputChat(thePlayer, "* Абонент занят", "Server")
 			end
 		else
 			if(PhonesWaiting[thePlayer]) then
 				CallIn(thePlayer)
-				outputChatBox("* Абонент взял трубку", PhonesWaiting[thePlayer], 255,255,255,true)
+				OutputChat(PhonesWaiting[thePlayer], "* Абонент взял трубку", "Server")
 				PhonesTo[thePlayer] = PhonesWaiting[thePlayer]
 			else
-				outputChatBox("Используй /call id игрока чтобы позвонить", thePlayer, 255,255,255,true)
-				outputChatBox("Напиши /call чтобы бросить трубку", thePlayer, 255,255,255,true)
+				OutputChat(thePlayer, "Используй /call id игрока чтобы позвонить", "Server")
+				OutputChat(thePlayer, "Напиши /call чтобы бросить трубку", "Server")
 			end
 		end
 	else
 		CallOut(thePlayer)
 		if(Phones[PhonesTo[thePlayer]]) then
 			CallOut(PhonesTo[thePlayer])
-			outputChatBox("* Абонент положил трубку", PhonesTo[thePlayer], 255,255,255,true)
+			OutputChat(PhonesTo[thePlayer], "* Абонент положил трубку", "Server")
 		end
 		if(PhonesWaiting[PhonesTo[thePlayer]]) then
 			PhonesWaiting[PhonesTo[thePlayer]] = nil
 		end
 	end
 end
-addCommandHandler("call", CallPhones)
+addEvent("call", true)
+addEventHandler("call", root, CallPhones)
+
 
 
 function CallIn(thePlayer)
-	SetControls(thePlayer, "phone", {["fire"] = true, ["action"] = true, ["jump"] = true, ["sprint"] = true})
+	--SetControls(thePlayer, "phone", {["fire"] = true, ["action"] = true, ["jump"] = true, ["sprint"] = true})
 
-	StartAnimation(thePlayer, "ped", "phone_in", 1, false, true, true, true)
+	--StartAnimation(thePlayer, "ped", "phone_in", 1, false, true, true, true)
 	Phones[thePlayer] = true
-	AddPlayerArmas(thePlayer, 330)
+	--AddPlayerArmas(thePlayer, 330)
 end
 
 
 function CallOut(thePlayer)
-	SetControls(thePlayer, "phone", {["fire"] = false, ["action"] = false, ["jump"] = false, ["sprint"] = false})
+	--SetControls(thePlayer, "phone", {["fire"] = false, ["action"] = false, ["jump"] = false, ["sprint"] = false})
 
-	StartAnimation(thePlayer, "ped", "phone_out", 1, false, true, true, true)
+	--StartAnimation(thePlayer, "ped", "phone_out", 1, false, true, true, true)
 	setTimer(function()
-		RemovePlayerArmas(thePlayer, 330)
+		--RemovePlayerArmas(thePlayer, 330)
 		Phones[thePlayer] = false
 		PhonesTo[thePlayer] = false
 		if(PhonesWaiting[thePlayer]) then
@@ -111,7 +113,7 @@ addEvent("CallPolice", true)
 addEventHandler("CallPolice", root, CallPolice)
 
 function PhoneTalk(thePlayer)
-	StartAnimation(thePlayer, "ped", "phone_talk", 1)
+	--StartAnimation(thePlayer, "ped", "phone_talk", 1)
 	local x,y,z = getElementPosition(thePlayer)
 	triggerEvent("onPlayerChat", thePlayer, "Алло, полиция? Преступник в "..getZoneName(x, y, z), 1)
 end
@@ -127,7 +129,7 @@ function PhoneTalkEnd(thePlayer, bandit)
 			PoliceCallBandints[bandit] = getZoneName(x,y,z)
 			local banditPlayer = getPlayerFromName(bandit)
 			local x,y,z = GetPlayerLocation(banditPlayer)
-			StartAnimation(thePlayer, "ped", "phone_out", false,false,false,false)
+			--StartAnimation(thePlayer, "ped", "phone_out", false,false,false,false)
 			Respect(thePlayer, "civilian", 1)
 			Respect(thePlayer, "police", 1)
 			Respect(thePlayer, "ugol", -1)
@@ -135,7 +137,7 @@ function PhoneTalkEnd(thePlayer, bandit)
 			PoliceCallRemove(x,y,z,"Обнаружен преступник")
 		else
 			outputChatBox("Полиции уже известно о положении преступника.", thePlayer)
-			StartAnimation(thePlayer, "ped", "phone_out", false,false,false,false)
+			--StartAnimation(thePlayer, "ped", "phone_out", false,false,false,false)
 		end
 	end
 end
@@ -154,33 +156,18 @@ function onPlayerChat(message, messageType, messagenovision)
 			return false
 		end
 
-		local theVehicle = getPedOccupiedVehicle(source)
-		if(theVehicle) then
-			if(getElementModel(theVehicle) == 582) then
-				local seat = getPedOccupiedVehicleSeat(source)
-				if(seat == 2 or seat == 3) then
-					cancelEvent()
-					if(getElementModel(source) == 60) then
-						outputChatBox("#FF0033Прямой эфир #CC9966(ведущий):#FFFFFF "..message, getRootElement(), 255,255,255,true)
-					else
-						outputChatBox("#FF0033Прямой эфир #CC9966(гость):#FFFFFF "..message, getRootElement(), 255,255,255,true)
-					end
-				end
-			end
-		end
-
 		if messageType == 0 then
 			if(Phones[source]) then
 				local CallTo = PhonesTo[source]
-				outputChatBox("(ТЕЛЕФОН) ["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, source,0,255,255, true)
+				OutputChat(source, "(ТЕЛЕФОН) ["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, "Server")
 				if(getPedOccupiedVehicle(source)) then
-					StartAnimation(source, "ped", "phone_talk", false,false,false,false)
+					--StartAnimation(source, "ped", "phone_talk", false,false,false,false)
 				else
-					StartAnimation(source, "ped", "phone_talk", 1, false, true, true, true)
+					--StartAnimation(source, "ped", "phone_talk", 1, false, true, true, true)
 				end
 	
 				if(Phones[CallTo]) then
-					outputChatBox("(ТЕЛЕФОН) ["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, CallTo,0,255,255, true)
+					OutputChat(CallTo, "(ТЕЛЕФОН) ["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, "Server")
 				end
 				cancelEvent()
 				return true

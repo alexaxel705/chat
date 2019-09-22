@@ -3,12 +3,12 @@ local screenWidth, screenHeight = guiGetScreenSize()
 local scale = (screenWidth/1920)+(screenHeight/1080)
 local scalex = (screenWidth/1920)
 local scaley = (screenHeight/1080)
-local ChatImage = false
 local ChatW, ChatH = 700*scale, 150*scale
+local ChatImage = dxCreateRenderTarget(ChatW, ChatH, true)
 local ChatAlpha = 255
 local HiddenChatTimer = false
 local Avatars = {}
-local AvatarW, AvatarH = 60*scale, 30*scale
+local AvatarW, AvatarH = 55*scale, 25*scale
 local input = false
 local SpawnMessage = true
 showChat(false)
@@ -38,7 +38,6 @@ function onClientGotImage(thePlayer, Avatar)
 	
 	Avatars[thePlayer] = {w/sizea, h/sizeb, image}
 	
-	ChatImage = false
 end
 addEvent("onClientGotImage", true)
 addEventHandler("onClientGotImage", getRootElement(), onClientGotImage)
@@ -46,37 +45,34 @@ addEventHandler("onClientGotImage", getRootElement(), onClientGotImage)
 
 
 function DrawChat()
-	if(not ChatImage) then
-		ChatImage = dxCreateRenderTarget(ChatW, ChatH, true)
-		dxSetRenderTarget(ChatImage, true)
-		dxSetBlendMode("modulate_add")
-		
-		local count = 1
-		local countsize = AvatarH
-		local th = dxGetFontHeight(scale, "default-bold")
-		for i = #Chat, #Chat-4, -1 do
-			if(Chat[i]) then
-				count = count+1
-				local avasize = AvatarH -- Пока идет загрузка аватарки
-				
-				if(Avatars[Chat[i][2]]) then
-					avasize = Avatars[Chat[i][2]][2]
-					dxDrawImage((AvatarW-(Avatars[Chat[i][2]][1])), ChatH-countsize-avasize, Avatars[Chat[i][2]][1], Avatars[Chat[i][2]][2], Avatars[Chat[i][2]][3])
-				end
-				dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(5*scale), ChatH-countsize-(avasize/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
-				
-				countsize = countsize+avasize
+	dxSetRenderTarget(ChatImage, true)
+	dxSetBlendMode("modulate_add")
+	
+	local count = 1
+	local countsize = AvatarH
+	local th = dxGetFontHeight(scale, "default-bold")
+	for i = #Chat, #Chat-4, -1 do
+		if(Chat[i]) then
+			count = count+1
+			local avasize = AvatarH -- Пока идет загрузка аватарки
+			
+			if(Avatars[Chat[i][2]]) then
+				avasize = Avatars[Chat[i][2]][2]
+				dxDrawImage((AvatarW-(Avatars[Chat[i][2]][1])), ChatH-countsize-avasize, Avatars[Chat[i][2]][1], Avatars[Chat[i][2]][2], Avatars[Chat[i][2]][3])
 			end
+			dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(5*scale), ChatH-countsize-(avasize/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
+			
+			countsize = countsize+avasize
 		end
-	
-		if(input) then
-			dxDrawRectangle(0, ChatH-(AvatarH), 400*scale, AvatarH-2, tocolor(0, 0, 0, 150))
-			dxDrawBorderedText("Сказать: "..input, 5*scale, ChatH-(AvatarH/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
-		end
-	
-		dxSetBlendMode("blend")
-		dxSetRenderTarget()
 	end
+	
+	if(input) then
+		dxDrawRectangle(0, ChatH-(AvatarH), 400*scale, AvatarH-2, tocolor(0, 0, 0, 150))
+		dxDrawBorderedText("Сказать: "..input, 5*scale, ChatH-(AvatarH/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false, false, false, true)
+	end
+	
+	dxSetBlendMode("blend")
+	dxSetRenderTarget()
 	return ChatImage
 end
 
@@ -100,7 +96,6 @@ function OutputChat(message, from)
 	end
 	Chat[#Chat+1] = {message, from}
 	outputConsole(from..": "..message)
-	ChatImage = false
 	ChatAlpha = 255
 	
 	
@@ -119,6 +114,14 @@ function OutputChat(message, from)
 end
 addEvent("OutputChat", true)
 addEventHandler("OutputChat", getRootElement(), OutputChat)
+
+
+
+
+function call(_, id)
+	triggerServerEvent("call", localPlayer, localPlayer, _, id)
+end
+addCommandHandler("call", call)
 
 
 
@@ -161,7 +164,6 @@ function playerPressedKey(button, press)
 			openinput()
 		elseif(button == "backspace") then
 			input = utf8.remove(input, -1, -1)
-			ChatImage = false
 		end
 		cancelEvent()
     end
@@ -177,7 +179,6 @@ function outputPressedCharacter(character)
 	end
 	
 	input = input..character
-	ChatImage = false
 end
 
 
@@ -185,13 +186,11 @@ function openinput()
 	ChatAlpha = 255
 	if(input) then
 		input = false
-		ChatImage = false
 		removeEventHandler("onClientCharacter", getRootElement(), outputPressedCharacter)
 		removeEventHandler("onClientKey", root, playerPressedKey)
 		bindKey("t", "down", openinput)
 	else		
 		input = false
-		ChatImage = false
 		addEventHandler("onClientCharacter", getRootElement(), outputPressedCharacter)
 		addEventHandler("onClientKey", root, playerPressedKey)
 		unbindKey("t", "down", openinput)
