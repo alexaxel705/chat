@@ -136,8 +136,14 @@ end
 
 
 
-function ResultGet(sum)
-    --outputChatBox(sum)
+function ResultGet()
+
+end
+
+function CallBackGovorilka(thePlayer, voice, gg)
+	if(thePlayer) then
+		triggerClientEvent(getPlayerFromName(thePlayer), "PlaySound", getPlayerFromName(thePlayer), "http://109.227.228.4/engine/include/MTA/"..gg.."/"..md5(utf8.upper(voice))..".wav")
+	end
 end
 
 
@@ -161,6 +167,13 @@ function onPlayerChat(message, messageType, messagenovision)
 				if(Phones[CallTo]) then
 					OutputChat(CallTo, "["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, "Phone")
 				end
+				
+				CheckVoice(source, message, "gg")
+				triggerClientEvent(source, "PlaySound", source, "http://109.227.228.4/engine/include/MTA/gg/"..md5(utf8.upper(message))..".wav")
+				
+				CheckVoice(CallTo, message, "dg")
+				triggerClientEvent(CallTo, "PlaySound", CallTo, "http://109.227.228.4/engine/include/MTA/dg/"..md5(utf8.upper(message))..".wav")
+				
 				cancelEvent()
 				return true
 			else
@@ -365,9 +378,9 @@ end
 addEventHandler("onElementDataChange", root, checkChange)
 
 
-function CheckVoice(voice, voicebank)
+function CheckVoice(thePlayer, voice, voicebank)
 	if(string.sub(voice, 0, 1) ~= "[") then
-		callRemote("http://109.227.228.4/engine/include/MTA/govorilka.php", ResultGet, voice, voicebank)
+		callRemote("http://109.227.228.4/engine/include/MTA/govorilka.php", CallBackGovorilka, getPlayerName(thePlayer), utf8.upper(voice), voicebank)
 	end
 end
 addEvent("CheckVoice", true)

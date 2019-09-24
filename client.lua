@@ -104,7 +104,7 @@ function OutputChat(message, from)
 		if(not isEventHandlerAdded("onClientHUDRender", root, avatardraw)) then
 			addEventHandler("onClientHUDRender", root, avatardraw)
 		end
-		HiddenChatTimer = setTimer(function() HiddenChatTimer = false end, 2000, 1)
+		HiddenChatTimer = setTimer(function() HiddenChatTimer = false end, 3000, 1)
 	end
 	
 	if(not Avatars[from]) then
@@ -123,6 +123,10 @@ end
 addCommandHandler("call", call)
 
 
+function el()
+	triggerServerEvent("el", localPlayer, localPlayer)
+end
+addCommandHandler("el", el)
 
 
 function math.round(number, decimals, method)
@@ -157,6 +161,24 @@ function string.explode(self, separator)
     return loadstring("return {\""..self:gsub(separator, "\",\"").."\"}")()
 end
 
+
+function PlaySound(link) 
+	local s = playSound(link)
+
+end
+addEvent("PlaySound", true)
+addEventHandler("PlaySound", localPlayer, PlaySound)
+
+
+
+local RemoveInputTimer = setTimer(function()
+	if getKeyState("backspace") == true then
+		if(input) then
+			input = utf8.remove(input, -1, -1)
+		end
+	end
+end, 100, 0)
+
 function playerPressedKey(button, press)
     if (press) then
         if(button == "escape") then
@@ -182,11 +204,16 @@ function playerPressedKey(button, press)
 			end
 			openinput()
 		elseif(button == "backspace") then
+			resetTimer(RemoveInputTimer)
 			input = utf8.remove(input, -1, -1)
 		end
 		cancelEvent()
     end
 end
+
+
+
+
 
 function outputPressedCharacter(character)
 	if(input == false) then 
