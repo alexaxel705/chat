@@ -97,14 +97,14 @@ function DrawChat()
 				
 				dxDrawImage((AvatarW-(avasizex)), y-countsize-avasizey, avasizex, avasizey, Avatars[Chat[i][2]][3])
 			end
-			dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(5*scale),y-countsize-(avasizey/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+			dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(5*scale),y-countsize-(avasizey/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false,false,false,true,not getElementData(root, "LowPCMode"))
 			countsize = countsize+avasizey
 		end
 	end
 	
 	if(input) then
 		dxDrawRectangle(0, y-(AvatarH), 400*scale, AvatarH-2, tocolor(0, 0, 0, 150))
-		dxDrawBorderedText("Сказать: "..input, 5*scale, y-(AvatarH/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawBorderedText("Сказать: "..input, 5*scale, y-(AvatarH/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false,false,false,true,not getElementData(root, "LowPCMode"))
 	end
 	
 	dxSetBlendMode("blend")
@@ -183,11 +183,11 @@ function dxDrawBorderedText(text, left, top, right, bottom, color, scale, font, 
 		if (locsca == 0) then locsca = 1 end
 		for oX = -locsca, locsca do 
 			for oY = -locsca, locsca do 
-				dxDrawText(textb, left + oX, top + oY, right + oX, bottom + oY, tocolor(r, g, b, bitExtract(color, 24, 8)), scale, font, alignX, alignY, clip, wordBreak,postGUI, not getElementData(localPlayer, "LowPCMode"))
+				dxDrawText(textb, left + oX, top + oY, right + oX, bottom + oY, tocolor(r, g, b, bitExtract(color, 24, 8)), scale, font, alignX, alignY, clip, wordBreak,postGUI, not getElementData(root, "LowPCMode"))
 			end
 		end
 
-		dxDrawText(text, left, top, right, bottom, color, scale, font, alignX, alignY, clip, wordBreak, postGUI, colorCoded, not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(text, left, top, right, bottom, color, scale, font, alignX, alignY, clip, wordBreak, postGUI, colorCoded, not getElementData(root, "LowPCMode"))
 	end
 end
 
@@ -314,7 +314,7 @@ addEventHandler("onClientPlayerJoin", getRootElement(), remotePlayerJoin)
 
 
 
-local StaminaBarW, StaminaBarH = 75, 2
+local StaminaBarW, StaminaBarH = 85, 2
 
 function getMaxStamina()
 	return 5+math.floor(getPedStat(localPlayer, 22)/40)
@@ -389,7 +389,7 @@ function DrawStaminaBar()
 			local alpha = 255-(dist*5)
 			if(alpha >= 0) then
 				if(not RenderTargets[thePlayer]) then
-					RenderTargets[thePlayer] = {false, 400, 40, true}
+					RenderTargets[thePlayer] = {false, 400, 60, true}
 				end
 				dxDrawImage(sx-((RenderTargets[thePlayer][2])/2),sy-((RenderTargets[thePlayer][3])/2), RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], DrawNicknameBar(thePlayer), 0, 0, 0, tocolor(255,255,255,alpha), true)
 			end
@@ -404,7 +404,7 @@ function DrawStaminaBar()
 			local alpha = 255-(dist*5)
 			if(alpha >= 0) then
 				if(not RenderTargets[thePlayer]) then
-					RenderTargets[thePlayer] = {false, 400, 40, true}
+					RenderTargets[thePlayer] = {false, 400, 60, true}
 				end
 				dxDrawImage(sx-((RenderTargets[thePlayer][2])/2),sy-((RenderTargets[thePlayer][3])/2), RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], DrawNicknameBar(thePlayer), 0, 0, 0, tocolor(255,255,255,alpha), true)
 			end
@@ -445,18 +445,18 @@ function DrawNicknameBar(thePlayer)
 	dxSetBlendMode("modulate_add")
 	
 	if(PlayersAction[thePlayer]) then			
-		dxDrawText(PlayersAction[thePlayer], x,0, 2,2, tocolor(0,0,0,255), scale*0.8, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
-		dxDrawText(PlayersAction[thePlayer], x,0, 0,0, tocolor(255,255,255,255), scale*0.8, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(PlayersAction[thePlayer], x,y/6, 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(root, "LowPCMode"))
+		dxDrawText(PlayersAction[thePlayer], x,y/6, 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(root, "LowPCMode"))
 	end
 	
 	if(getElementType(thePlayer) == "player") then
 		local StaminaBarW, StaminaBarH = StaminaBarW*RenderQuality, StaminaBarH*RenderQuality
-		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y/2.4, 2,2, tocolor(0,0,0,255), scale*0.8, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
-		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y/2.4, 0,0, tocolor(255,255,255,255), scale*0.8, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y/2, 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(root, "LowPCMode"))
+		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y/2, 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(root, "LowPCMode"))
 		if(thePlayer == localPlayer) then
-			dxDrawRectangle((x/2)-(StaminaBarW/2),y-3, StaminaBarW, StaminaBarH, tocolor(50,50,50, 50), false)
-			dxDrawRectangle((x/2),y-3, ((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
-			dxDrawRectangle((x/2),y-3, -((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
+			dxDrawRectangle((x/2)-(StaminaBarW/2),y-(3*scale), StaminaBarW, StaminaBarH, tocolor(50,50,50, 50), false)
+			dxDrawRectangle((x/2),y-(3*scale), ((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
+			dxDrawRectangle((x/2),y-(3*scale), -((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
 		end
 	end
 	
@@ -520,7 +520,7 @@ function DrawHelp()
 	local x = RenderTargets["HelpMessage"][2]*RenderQuality
 	local y = RenderTargets["HelpMessage"][3]*RenderQuality
 	
-	dxDrawBorderedText(helpMSG, x, 0, 0, 0, tocolor(255, 255, 255, 255), scale*1.15, "sans", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+	dxDrawBorderedText(helpMSG, x, 0, 0, 0, tocolor(255, 255, 255, 255), scale*1.2, "sans", "center", "top", false,false,false,true,not getElementData(root, "LowPCMode"))
 
 	dxSetBlendMode("blend")
 	dxSetRenderTarget()
