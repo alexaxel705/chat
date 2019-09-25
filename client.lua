@@ -16,7 +16,7 @@ showChat(false)
 local RenderQuality = 1
 local RenderTargets = {
 	["Chat"] = {false, 700*scale, 150*scale, true}, 
-	["HelpMessage"] = {false, 500*scale, 100*scale, true}, 
+	["HelpMessage"] = {false, 500*scale, 100*scale, true, "DrawHelpHandler"}, 
 }
 
 for name, dat in pairs(RenderTargets) do
@@ -24,18 +24,27 @@ for name, dat in pairs(RenderTargets) do
 end
 
 
+function UpdateTargets()
+	for name, dat in pairs(RenderTargets) do
+		if(dat[1]) then
+			destroyElement(dat[1])			
+		end
+		dat[1] = dxCreateRenderTarget(dat[2]*RenderQuality, dat[3]*RenderQuality, dat[4])
+		if(dat[5]) then
+			triggerEvent(dat[5], localPlayer)
+		end
+	end
+end
+
 function RenderQualityChecker(theKey, oldValue, newValue)
     if theKey == "RenderQuality" and source == root then
 		if(newValue) then
 			RenderQuality = tonumber(getElementData(root, "RenderQuality"))
-			outputConsole(RenderQuality)
 		else
 			RenderQuality = 1
 		end
 			
-		for name, dat in pairs(RenderTargets) do
-			dat[1] = dxCreateRenderTarget(dat[2]*RenderQuality, dat[3]*RenderQuality, dat[4])
-		end
+		UpdateTargets()
     end
 end
 addEventHandler("onClientElementDataChange", root, RenderQualityChecker)
@@ -131,9 +140,8 @@ function OutputChat(message, from)
 		from = getPlayerName(from)
 	end
 	Chat[#Chat+1] = {message, from}
-	outputConsole(from..": "..message)
+	outputChatBox(from..": "..message)
 	ChatAlpha = 255
-	
 	
 	if(HiddenChatTimer) then
 		resetTimer(HiddenChatTimer)
@@ -348,16 +356,6 @@ end
 
 
 
-function PlayerVehicleExit(theVehicle, seat)
-	if(source == localPlayer) then 
-		if(seat == 0) then
-			SendCoordsToServer()
-		end
-	end
-end
-addEventHandler("onClientPlayerVehicleExit", getRootElement(), PlayerVehicleExit)
-
-
 
 
 function PlayerSpawn()
@@ -371,6 +369,7 @@ end
 addEventHandler("onClientPlayerSpawn", getLocalPlayer(), PlayerSpawn)
 
 function Start()
+	UpdateTargets()
 	if(not isPedDead(localPlayer)) then
 		PlayerSpawn()
 	end
@@ -495,24 +494,30 @@ addEventHandler("ShakeLevel", localPlayer, ShakeLevel)
 
 
 local MessageTimer = false
-local helpMSG = false
+
+
+function DrawHelpMessage()
+	dxDrawImage(screenWidth/2-(RenderTargets["HelpMessage"][2]/2), screenHeight/1.2, RenderTargets["HelpMessage"][2], RenderTargets["HelpMessage"][3], RenderTargets["HelpMessage"][1])
+end
 
 function helpmessage(message)
+	DrawHelp(message)
+	
 	if(isTimer(MessageTimer)) then
 		killTimer(MessageTimer)
+	else
+		addEventHandler("onClientRender", root, DrawHelpMessage)
 	end
 	
-	helpMSG = message
-
 	MessageTimer = setTimer(function()
-		helpMSG = nil
+		removeEventHandler("onClientRender", root, DrawHelpMessage)
 	end, 3500, 1)
 end
 addEvent("helpmessageEvent", true)
-addEventHandler("helpmessageEvent", localPlayer, helpmessage)
+addEventHandler("helpmessageEvent", root, helpmessage)
 
 
-function DrawHelp()
+function DrawHelp(message)
 	dxSetRenderTarget(RenderTargets["HelpMessage"][1], true)
 	dxSetBlendMode("modulate_add")
 	
@@ -520,23 +525,16 @@ function DrawHelp()
 	local x = RenderTargets["HelpMessage"][2]*RenderQuality
 	local y = RenderTargets["HelpMessage"][3]*RenderQuality
 	
-	dxDrawBorderedText(helpMSG, x, 0, 0, 0, tocolor(255, 255, 255, 255), scale*1.2, "sans", "center", "top", false,false,false,true,not getElementData(root, "LowPCMode"))
-
+	dxDrawBorderedText(message or "", x, 0, 0, 0, tocolor(255, 255, 255, 255), scale*1.2, "sans", "center", "top", false,false,false,true,not getElementData(root, "LowPCMode"))
+	
 	dxSetBlendMode("blend")
 	dxSetRenderTarget()
 	return RenderTargets["HelpMessage"][1]
 end
+addEvent("DrawHelpHandler", true)
+addEventHandler("DrawHelpHandler", root, DrawHelp)
 
 
-
-
-function DrawHelpMessage()
-	if(helpMSG) then
-	
-		dxDrawImage(screenWidth/2-(RenderTargets["HelpMessage"][2]/2), screenHeight/1.2, RenderTargets["HelpMessage"][2], RenderTargets["HelpMessage"][3], DrawHelp())
-	end
-end
-addEventHandler("onClientRender", root, DrawHelpMessage)
 
 
 
