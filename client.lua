@@ -3,8 +3,6 @@ local screenWidth, screenHeight = guiGetScreenSize()
 local scale = (screenWidth/1920)+(screenHeight/1080)
 local scalex = (screenWidth/1920)
 local scaley = (screenHeight/1080)
-local ChatW, ChatH = 700*scale, 150*scale
-local ChatImage = dxCreateRenderTarget(ChatW, ChatH, true)
 local ChatAlpha = 255
 local HiddenChatTimer = false
 local Avatars = {}
@@ -12,6 +10,37 @@ local AvatarW, AvatarH = 55*scale, 25*scale
 local input = false
 local SpawnMessage = true
 showChat(false)
+
+
+
+local RenderQuality = 1
+local RenderTargets = {
+	["Chat"] = {false, 700*scale, 150*scale, true}, 
+	["HelpMessage"] = {false, 500*scale, 100*scale, true}, 
+}
+
+for name, dat in pairs(RenderTargets) do
+	dat[1] = dxCreateRenderTarget(dat[2], dat[3], dat[4])
+end
+
+
+function RenderQualityChecker(theKey, oldValue, newValue)
+    if theKey == "RenderQuality" and source == root then
+		if(newValue) then
+			RenderQuality = tonumber(getElementData(root, "RenderQuality"))
+			outputConsole(RenderQuality)
+		else
+			RenderQuality = 1
+		end
+			
+		for name, dat in pairs(RenderTargets) do
+			dat[1] = dxCreateRenderTarget(dat[2]*RenderQuality, dat[3]*RenderQuality, dat[4])
+		end
+    end
+end
+addEventHandler("onClientElementDataChange", root, RenderQualityChecker)
+
+
 
 
 
@@ -44,41 +73,49 @@ addEventHandler("onClientGotImage", getRootElement(), onClientGotImage)
 
 
 function DrawChat()
-	dxSetRenderTarget(ChatImage, true)
+	dxSetRenderTarget(RenderTargets["Chat"][1], true)
 	dxSetBlendMode("modulate_add")
 	
+	local scale = scale*RenderQuality
+	local x = RenderTargets["Chat"][2]*RenderQuality
+	local y = RenderTargets["Chat"][3]*RenderQuality
+	local AvatarW = AvatarW*RenderQuality
+	local AvatarH = AvatarH*RenderQuality
+			
 	local count = 1
 	local countsize = AvatarH
 	local th = dxGetFontHeight(scale, "default-bold")
 	for i = #Chat, #Chat-4, -1 do
 		if(Chat[i]) then
 			count = count+1
-			local avasize = AvatarH -- Пока идет загрузка аватарки
+			local avasizex = AvatarW -- Пока идет загрузка аватарки
+			local avasizey = AvatarH
 			
 			if(Avatars[Chat[i][2]]) then
-				avasize = Avatars[Chat[i][2]][2]
-				dxDrawImage((AvatarW-(Avatars[Chat[i][2]][1])), ChatH-countsize-avasize, Avatars[Chat[i][2]][1], Avatars[Chat[i][2]][2], Avatars[Chat[i][2]][3])
+				avasizex = Avatars[Chat[i][2]][1]*RenderQuality -- Когда загружена
+				avasizey = Avatars[Chat[i][2]][2]*RenderQuality -- Когда загружена
+				
+				dxDrawImage((AvatarW-(avasizex)), y-countsize-avasizey, avasizex, avasizey, Avatars[Chat[i][2]][3])
 			end
-			dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(5*scale), ChatH-countsize-(avasize/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
-			
-			countsize = countsize+avasize
+			dxDrawBorderedText(Chat[i][2]..": "..Chat[i][1], AvatarW+(5*scale),y-countsize-(avasizey/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+			countsize = countsize+avasizey
 		end
 	end
 	
 	if(input) then
-		dxDrawRectangle(0, ChatH-(AvatarH), 400*scale, AvatarH-2, tocolor(0, 0, 0, 150))
-		dxDrawBorderedText("Сказать: "..input, 5*scale, ChatH-(AvatarH/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawRectangle(0, y-(AvatarH), 400*scale, AvatarH-2, tocolor(0, 0, 0, 150))
+		dxDrawBorderedText("Сказать: "..input, 5*scale, y-(AvatarH/2)-(th/2), 0, 0, tocolor(255, 255, 255, 255), scale, "default-bold", "left", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
 	end
 	
 	dxSetBlendMode("blend")
 	dxSetRenderTarget()
-	return ChatImage
+	return RenderTargets["Chat"][1]
 end
 
 
 
 function avatardraw()
-	dxDrawImage(550*scalex, 580*scaley, ChatW, ChatH, DrawChat(), 0, 0, 0, tocolor(255, 255, 255, ChatAlpha))
+	dxDrawImage(550*scalex, 580*scaley, RenderTargets["Chat"][2], RenderTargets["Chat"][3], DrawChat(), 0, 0, 0, tocolor(255, 255, 255, ChatAlpha))
 	
 	if(not HiddenChatTimer and not input) then
 		ChatAlpha = ChatAlpha-2
@@ -263,6 +300,244 @@ function remotePlayerJoin()
 	Avatars[getPlayerName(source)] = nil
 end
 addEventHandler("onClientPlayerJoin", getRootElement(), remotePlayerJoin)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local StaminaBarW, StaminaBarH = 75, 2
+
+function getMaxStamina()
+	return 5+math.floor(getPedStat(localPlayer, 22)/40)
+end
+
+local Stamina = false
+local LVLUPSTAMINA = 10
+local ShakeLVL = 0
+local PlayersAction = {}
+local timersAction = {}
+
+
+
+
+function checkKey()
+	if(getPedControlState(localPlayer, "sprint")) and Stamina ~= 0 then
+		Stamina = Stamina-0.1
+		if(getPedStat(localPlayer, 22) ~= 1000) then
+			LVLUPSTAMINA = LVLUPSTAMINA-0.1
+			if(LVLUPSTAMINA == 0) then
+				triggerServerEvent("StaminaOut", localPlayer, true)
+				LVLUPSTAMINA = 10
+			end
+		end
+	end
+	if(Stamina <= 0) then
+		triggerServerEvent("StaminaOut", localPlayer)
+		setPedControlState(localPlayer, "sprint", false)
+	end
+end
+
+
+
+function PlayerVehicleExit(theVehicle, seat)
+	if(source == localPlayer) then 
+		if(seat == 0) then
+			SendCoordsToServer()
+		end
+	end
+end
+addEventHandler("onClientPlayerVehicleExit", getRootElement(), PlayerVehicleExit)
+
+
+
+
+function PlayerSpawn()
+	if(not Stamina) then
+		setTimer(checkKey,100,0)
+		setTimer(updateStamina,250,0)
+		addEventHandler("onClientRender", root, DrawStaminaBar)
+	end
+	Stamina = getMaxStamina()
+end
+addEventHandler("onClientPlayerSpawn", getLocalPlayer(), PlayerSpawn)
+
+function Start()
+	if(not isPedDead(localPlayer)) then
+		PlayerSpawn()
+	end
+end
+addEventHandler("onClientResourceStart", getResourceRootElement(), Start)
+
+
+
+function DrawStaminaBar()
+	local cx,cy,cz = getCameraMatrix()
+	for _, thePlayer in pairs(getElementsByType("player", getRootElement(), true)) do
+		local x,y,z = getPedBonePosition(thePlayer, 8)
+		local sx,sy = getScreenFromWorldPosition(x,y,z+0.3)
+		if(sx and sy) then
+			local dist = getDistanceBetweenPoints3D(x,y,z,cx,cy,cz)
+			local alpha = 255-(dist*5)
+			if(alpha >= 0) then
+				if(not RenderTargets[thePlayer]) then
+					RenderTargets[thePlayer] = {false, 400, 40, true}
+				end
+				dxDrawImage(sx-((RenderTargets[thePlayer][2])/2),sy-((RenderTargets[thePlayer][3])/2), RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], DrawNicknameBar(thePlayer), 0, 0, 0, tocolor(255,255,255,alpha), true)
+			end
+		end
+	end
+	
+	for _, thePlayer in pairs(getElementsByType("ped", getRootElement(), true)) do
+		local x,y,z = getPedBonePosition(thePlayer, 8)
+		local sx,sy = getScreenFromWorldPosition(x,y,z+0.3)
+		if(sx and sy) then
+			local dist = getDistanceBetweenPoints3D(x,y,z,cx,cy,cz)
+			local alpha = 255-(dist*5)
+			if(alpha >= 0) then
+				if(not RenderTargets[thePlayer]) then
+					RenderTargets[thePlayer] = {false, 400, 40, true}
+				end
+				dxDrawImage(sx-((RenderTargets[thePlayer][2])/2),sy-((RenderTargets[thePlayer][3])/2), RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], DrawNicknameBar(thePlayer), 0, 0, 0, tocolor(255,255,255,alpha), true)
+			end
+		end
+	end
+end
+
+
+
+
+
+
+function PlayerActionEvent(message,thePlayer)
+	PlayersAction[thePlayer] = message
+	if(isTimer(timersAction[thePlayer])) then
+		killTimer(timersAction[thePlayer])
+	end
+	timersAction[thePlayer] = setTimer(function()
+		PlayersAction[thePlayer] = nil
+	end, 300+(#message*150), 1)
+end
+addEvent("PlayerActionEvent", true)
+addEventHandler("PlayerActionEvent", localPlayer, PlayerActionEvent)
+
+
+
+
+function DrawNicknameBar(thePlayer)
+	if(not RenderTargets[thePlayer][1]) then
+		RenderTargets[thePlayer][1] = dxCreateRenderTarget(RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], RenderTargets[thePlayer][4])
+	end
+	
+	local scale = scale*RenderQuality
+	local x = RenderTargets[thePlayer][2]*RenderQuality
+	local y = RenderTargets[thePlayer][3]*RenderQuality
+	
+	dxSetRenderTarget(RenderTargets[thePlayer][1], true)
+	dxSetBlendMode("modulate_add")
+	
+	if(PlayersAction[thePlayer]) then			
+		dxDrawText(PlayersAction[thePlayer], x,0, 2,2, tocolor(0,0,0,255), scale*0.8, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(PlayersAction[thePlayer], x,0, 0,0, tocolor(255,255,255,255), scale*0.8, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+	end
+	
+	if(getElementType(thePlayer) == "player") then
+		local StaminaBarW, StaminaBarH = StaminaBarW*RenderQuality, StaminaBarH*RenderQuality
+		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y/2.4, 2,2, tocolor(0,0,0,255), scale*0.8, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y/2.4, 0,0, tocolor(255,255,255,255), scale*0.8, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		if(thePlayer == localPlayer) then
+			dxDrawRectangle((x/2)-(StaminaBarW/2),y-3, StaminaBarW, StaminaBarH, tocolor(50,50,50, 50), false)
+			dxDrawRectangle((x/2),y-3, ((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
+			dxDrawRectangle((x/2),y-3, -((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
+		end
+	end
+	
+	dxSetBlendMode("blend")
+	dxSetRenderTarget()
+	return RenderTargets[thePlayer][1]
+end
+
+
+function updateStamina()
+	if Stamina ~= getMaxStamina() and getPedControlState(localPlayer, "sprint") == false then
+		Stamina = Stamina+0.1
+	end
+	
+	if(ShakeLVL > 0) then
+		ShakeLVL = ShakeLVL-1
+		setCameraShakeLevel(ShakeLVL)
+	end	
+end
+
+
+
+function ShakeLevel(level)
+	ShakeLVL = ShakeLVL+level
+end
+addEvent("ShakeLevel", true)
+addEventHandler("ShakeLevel", localPlayer, ShakeLevel)
+
+
+
+
+
+
+
+
+
+
+local MessageTimer = false
+local helpMSG = false
+
+function helpmessage(message)
+	if(isTimer(MessageTimer)) then
+		killTimer(MessageTimer)
+	end
+	
+	helpMSG = message
+
+	MessageTimer = setTimer(function()
+		helpMSG = nil
+	end, 3500, 1)
+end
+addEvent("helpmessageEvent", true)
+addEventHandler("helpmessageEvent", localPlayer, helpmessage)
+
+
+function DrawHelp()
+	dxSetRenderTarget(RenderTargets["HelpMessage"][1], true)
+	dxSetBlendMode("modulate_add")
+	
+	local scale = scale*RenderQuality
+	local x = RenderTargets["HelpMessage"][2]*RenderQuality
+	local y = RenderTargets["HelpMessage"][3]*RenderQuality
+	
+	dxDrawBorderedText(helpMSG, x, 0, 0, 0, tocolor(255, 255, 255, 255), scale*1.15, "sans", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+
+	dxSetBlendMode("blend")
+	dxSetRenderTarget()
+	return RenderTargets["HelpMessage"][1]
+end
+
+
+
+
+function DrawHelpMessage()
+	if(helpMSG) then
+	
+		dxDrawImage(screenWidth/2-(RenderTargets["HelpMessage"][2]/2), screenHeight/1.2, RenderTargets["HelpMessage"][2], RenderTargets["HelpMessage"][3], DrawHelp())
+	end
+end
+addEventHandler("onClientRender", root, DrawHelpMessage)
+
 
 
 
