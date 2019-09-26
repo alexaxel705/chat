@@ -162,16 +162,33 @@ addEventHandler("OutputChat", getRootElement(), OutputChat)
 
 
 
-function call(command, id)
-	triggerServerEvent("call", localPlayer, localPlayer, command, id)
+
+function helpcmd(thePlayer)
+	triggerEvent("ToolTip", localPlayer, "/piss - обоссать, /wank - подрочить\r\n"..
+	"/dance [1-13] - танцевать, /arm - служить в армии\r\n"..
+	"/teamleave - покинуть фракцию\r\n"..
+	"/changepass старый пароль новый пароль")
 end
-addCommandHandler("call", call)
+addCommandHandler("cmd", helpcmd)
+addCommandHandler("help", helpcmd)
 
 
-function el()
-	triggerServerEvent("el", localPlayer, localPlayer)
+
+function Execute(command, dat)
+	triggerServerEvent(command, localPlayer, localPlayer, dat)
 end
-addCommandHandler("el", el)
+addCommandHandler("call", Execute)
+addCommandHandler("el", Execute)
+addCommandHandler("piss", Execute)
+addCommandHandler("race", Execute)
+addCommandHandler("wank", Execute)
+addCommandHandler("kill", Execute)
+addCommandHandler("dm", Execute)
+addCommandHandler("tp", Execute)
+addCommandHandler("dance", Execute)
+
+
+
 
 
 function math.round(number, decimals, method)
@@ -255,7 +272,6 @@ function playerPressedKey(button, press)
 		cancelEvent()
     end
 end
-
 
 
 
@@ -483,7 +499,6 @@ function ShakeLevel(level)
 end
 addEvent("ShakeLevel", true)
 addEventHandler("ShakeLevel", localPlayer, ShakeLevel)
-
 
 
 
