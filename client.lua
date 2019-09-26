@@ -338,7 +338,7 @@ addEventHandler("onClientPlayerJoin", getRootElement(), remotePlayerJoin)
 
 
 
-local StaminaBarW, StaminaBarH = 85, 2
+local StaminaBarW, StaminaBarH = 85*scale, 2*scale
 
 function getMaxStamina()
 	return 5+math.floor(getPedStat(localPlayer, 22)/40)
@@ -404,7 +404,7 @@ function DrawStaminaBar()
 			local alpha = 255-(dist*5)
 			if(alpha >= 0) then
 				if(not RenderTargets[thePlayer]) then
-					RenderTargets[thePlayer] = {false, 400, 60, true}
+					RenderTargets[thePlayer] = {false, 400, 70, true}
 				end
 				dxDrawImage(sx-((RenderTargets[thePlayer][2])/2),sy-((RenderTargets[thePlayer][3])/2), RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], DrawNicknameBar(thePlayer), 0, 0, 0, tocolor(255,255,255,alpha), true)
 			end
@@ -452,26 +452,28 @@ function DrawNicknameBar(thePlayer)
 		RenderTargets[thePlayer][1] = dxCreateRenderTarget(RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], RenderTargets[thePlayer][4])
 	end
 	
+	dxSetRenderTarget(RenderTargets[thePlayer][1], true)
+	dxSetBlendMode("modulate_add")
+	
 	local scale = scale*RenderQuality
 	local x = RenderTargets[thePlayer][2]*RenderQuality
 	local y = RenderTargets[thePlayer][3]*RenderQuality
 	
-	dxSetRenderTarget(RenderTargets[thePlayer][1], true)
-	dxSetBlendMode("modulate_add")
-	
+	local fh = dxGetFontHeight(scale, "default-bold")
+		
 	if(PlayersAction[thePlayer]) then			
-		dxDrawText(PlayersAction[thePlayer], x,y/6, 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
-		dxDrawText(PlayersAction[thePlayer], x,y/6, 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(PlayersAction[thePlayer], x,y-(StaminaBarH*3)-(fh*2), 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(PlayersAction[thePlayer], x,y-(StaminaBarH*3)-(fh*2), 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
 	end
 	
 	if(getElementType(thePlayer) == "player") then
 		local StaminaBarW, StaminaBarH = StaminaBarW*RenderQuality, StaminaBarH*RenderQuality
-		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y/2, 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
-		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y/2, 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y-(StaminaBarH*3)-fh, 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y-(StaminaBarH*3)-fh, 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
 		if(thePlayer == localPlayer) then
-			dxDrawRectangle((x/2)-(StaminaBarW/2),y-(3*scale), StaminaBarW, StaminaBarH, tocolor(50,50,50, 50), false)
-			dxDrawRectangle((x/2),y-(3*scale), ((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
-			dxDrawRectangle((x/2),y-(3*scale), -((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
+			dxDrawRectangle((x/2)-(StaminaBarW/2),y-(StaminaBarH*2), StaminaBarW, StaminaBarH, tocolor(50,50,50, 50), false)
+			dxDrawRectangle((x/2),y-(StaminaBarH*2), ((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
+			dxDrawRectangle((x/2),y-(StaminaBarH*2), -((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
 		end
 	end
 	
