@@ -16,7 +16,7 @@ Phones = {}
 PhonesTo = {}
 PhonesWaiting = {}
 
-function CallPhones(thePlayer, _, h)
+function CallPhones(thePlayer, h)
     if(not Phones[thePlayer]) then
 		if(h) then
 			if(tostring(getElementData(thePlayer, "id")) ~= tostring(h)) then
