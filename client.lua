@@ -484,7 +484,7 @@ end
 
 
 function updateStamina()
-	if Stamina ~= getMaxStamina() and getPedControlState(localPlayer, "sprint") == false then
+	if Stamina <= getMaxStamina() and getPedControlState(localPlayer, "sprint") == false then
 		Stamina = Stamina+0.1
 	end
 	
