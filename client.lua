@@ -8,7 +8,6 @@ local HiddenChatTimer = false
 local Avatars = {}
 local AvatarW, AvatarH = 55*scale, 25*scale
 local input = false
-local SpawnMessage = true
 showChat(false)
 
 
@@ -135,6 +134,8 @@ function avatardraw()
 	end
 end
 
+
+		
 function OutputChat(message, from)
 	if(isElement(from)) then
 		from = getPlayerName(from)
@@ -307,15 +308,6 @@ bindKey("t", "down", openinput)
 
 
 
-
-
-function Spawn()
-	if(SpawnMessage) then
-		OutputChat("Используй клавишу T чтобы писать в чат", "Server")
-		SpawnMessage = false
-	end
-end
-addEventHandler("onClientPlayerSpawn", getLocalPlayer(), Spawn)
 
 
 

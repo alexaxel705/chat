@@ -68,12 +68,14 @@ addEventHandler("call", root, CallPhones)
 
 
 function CallIn(thePlayer)
+	triggerEvent("AddPlayerArmas", thePlayer, thePlayer, 330)
 	setPedAnimation(thePlayer, "ped", "phone_in", 1, false, true, true, true)
 	Phones[thePlayer] = true
 end
 
 
 function CallOut(thePlayer)
+	triggerEvent("RemovePlayerArmas", thePlayer, thePlayer, 330)
 	setPedAnimation(thePlayer, "ped", "phone_out", 1, false, true, true, true)
 	Phones[thePlayer] = false
 	PhonesTo[thePlayer] = false
@@ -85,7 +87,7 @@ end
 
 
 function CallPhoneOutput(thePlayer, arg)
-	CallPhones(thePlayer, _, arg)
+	CallPhones(thePlayer, arg)
 end
 addEvent("CallPhoneOutput", true)
 addEventHandler("CallPhoneOutput", root, CallPhoneOutput)
@@ -158,6 +160,11 @@ function onPlayerChat(message, messageType, messagenovision)
 			if(Phones[source]) then
 				local CallTo = PhonesTo[source]
 				OutputChat(source, "["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, "Phone")
+				
+				for key,thePlayers in pairs(getElementsByType "player") do
+					triggerClientEvent(thePlayers, "PlayerActionEvent", thePlayers, message, source)
+				end
+				
 				if(getPedOccupiedVehicle(source)) then
 					setPedAnimation(source, "ped", "phone_talk", false,false,false,false)
 				else
