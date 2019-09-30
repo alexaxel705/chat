@@ -370,7 +370,7 @@ function PlayerSpawn()
 	if(not Stamina) then
 		setTimer(checkKey,100,0)
 		setTimer(updateStamina,250,0)
-		addEventHandler("onClientRender", root, DrawStaminaBar)
+		addEventHandler("onClientHUDRender", root, DrawStaminaBar)
 	end
 	Stamina = getMaxStamina()
 end
@@ -398,7 +398,7 @@ function DrawStaminaBar()
 				if(not RenderTargets[thePlayer]) then
 					RenderTargets[thePlayer] = {false, 400, 70, true}
 				end
-				dxDrawImage(sx-((RenderTargets[thePlayer][2])/2),sy-((RenderTargets[thePlayer][3])/2), RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], DrawNicknameBar(thePlayer), 0, 0, 0, tocolor(255,255,255,alpha), true)
+				dxDrawImage(sx-((RenderTargets[thePlayer][2])/2),sy-((RenderTargets[thePlayer][3])/2), RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], DrawNicknameBar(thePlayer), 0, 0, 0, tocolor(255,255,255,alpha))
 			end
 		end
 	end
@@ -413,7 +413,7 @@ function DrawStaminaBar()
 				if(not RenderTargets[thePlayer]) then
 					RenderTargets[thePlayer] = {false, 400, 60, true}
 				end
-				dxDrawImage(sx-((RenderTargets[thePlayer][2])/2),sy-((RenderTargets[thePlayer][3])/2), RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], DrawNicknameBar(thePlayer), 0, 0, 0, tocolor(255,255,255,alpha), true)
+				dxDrawImage(sx-((RenderTargets[thePlayer][2])/2),sy-((RenderTargets[thePlayer][3])/2), RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], DrawNicknameBar(thePlayer), 0, 0, 0, tocolor(255,255,255,alpha))
 			end
 		end
 	end
