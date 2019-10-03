@@ -22,7 +22,6 @@ for name, dat in pairs(RenderTargets) do
 	dat[1] = dxCreateRenderTarget(dat[2], dat[3], dat[4])
 end
 
-
 function UpdateTargets()
 	for name, dat in pairs(RenderTargets) do
 		if(dat[1]) then
@@ -339,6 +338,7 @@ end
 local Stamina = false
 local LVLUPSTAMINA = 10
 local ShakeLVL = 0
+setCameraShakeLevel(0)
 local PlayersAction = {}
 local timersAction = {}
 
@@ -387,6 +387,8 @@ addEventHandler("onClientResourceStart", getResourceRootElement(), Start)
 
 
 function DrawStaminaBar()
+	if(not getElementData(localPlayer, "HUD")) then return false end
+	
 	local cx,cy,cz = getCameraMatrix()
 	for _, thePlayer in pairs(getElementsByType("player", getRootElement(), true)) do
 		local x,y,z = getPedBonePosition(thePlayer, 8)
