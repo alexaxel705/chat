@@ -6,15 +6,17 @@ local Zones = {
 	[3] = createColRectangle(2298, 2244, 119, 159),
 	[4] = createColRectangle(-2594, -60, 42, 89.5),
 	[5] = createColRectangle(-2740, 345, 67.5, 61),
+	[6] = createColRectangle(1957.4, 743.3, 20, 20),
+	[7] = createColRectangle(1957.4, 643.2, 20, 20),
 }
 for _,el in pairs(Zones) do
 	setElementData(el, "chat", true, false)
 end
 
 
-Phones = {}
-PhonesTo = {}
-PhonesWaiting = {}
+local Phones = {}
+local PhonesAbonent = {}
+local PhonesWaiting = {}
 
 function CallPhones(thePlayer, h)
     if(not Phones[thePlayer]) then
@@ -24,7 +26,7 @@ function CallPhones(thePlayer, h)
 					if(tostring(getElementData(thePlayers, "id")) == tostring(h)) then
 						if(not PhonesWaiting[thePlayers]) then
 							CallIn(thePlayer)
-							PhonesTo[thePlayer] = thePlayers
+							PhonesAbonent[thePlayer] = thePlayers
 							PhonesWaiting[thePlayers] = thePlayer
 							OutputChat(thePlayer, "Напиши /call чтобы бросить трубку", "Phone")
 							OutputChat(thePlayers, "Напиши /call чтобы взять трубку", "Phone")
@@ -45,19 +47,19 @@ function CallPhones(thePlayer, h)
 			if(PhonesWaiting[thePlayer]) then
 				CallIn(thePlayer)
 				OutputChat(PhonesWaiting[thePlayer], "* Абонент взял трубку", "Phone")
-				PhonesTo[thePlayer] = PhonesWaiting[thePlayer]
+				PhonesAbonent[thePlayer] = PhonesWaiting[thePlayer]
 			else
 				OutputChat(thePlayer, "Используй /call id игрока чтобы позвонить", "Phone")
 				OutputChat(thePlayer, "Напиши /call чтобы бросить трубку", "Phone")
 			end
 		end
 	else
-		if(Phones[PhonesTo[thePlayer]]) then
-			CallOut(PhonesTo[thePlayer])
-			OutputChat(PhonesTo[thePlayer], "* Абонент положил трубку", "Phone")
+		if(Phones[PhonesAbonent[thePlayer]]) then
+			CallOut(PhonesAbonent[thePlayer])
+			OutputChat(PhonesAbonent[thePlayer], "* Абонент положил трубку", "Phone")
 		end
-		if(PhonesWaiting[PhonesTo[thePlayer]]) then
-			PhonesWaiting[PhonesTo[thePlayer]] = nil
+		if(PhonesWaiting[PhonesAbonent[thePlayer]]) then
+			PhonesWaiting[PhonesAbonent[thePlayer]] = nil
 		end
 		CallOut(thePlayer)
 	end
@@ -78,7 +80,7 @@ function CallOut(thePlayer)
 	triggerEvent("RemovePlayerArmas", thePlayer, thePlayer, 330)
 	setPedAnimation(thePlayer, "ped", "phone_out", 1, false, true, true, true)
 	Phones[thePlayer] = false
-	PhonesTo[thePlayer] = false
+	PhonesAbonent[thePlayer] = false
 	if(PhonesWaiting[thePlayer]) then
 		PhonesWaiting[thePlayer] = nil
 	end
@@ -158,7 +160,7 @@ function onPlayerChat(message, messageType, messagenovision)
 
 		if messageType == 0 then
 			if(Phones[source]) then
-				local CallTo = PhonesTo[source]
+				local CallTo = PhonesAbonent[source]
 				OutputChat(source, "["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, "Phone")
 				
 				for key,thePlayers in pairs(getElementsByType "player") do
