@@ -465,9 +465,15 @@ function DrawNicknameBar(thePlayer)
 		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y-(StaminaBarH*3)-fh, 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
 		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y-(StaminaBarH*3)-fh, 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
 		if(thePlayer == localPlayer) then
-			dxDrawRectangle((x/2)-(StaminaBarW/2),y-(StaminaBarH*2), StaminaBarW, StaminaBarH, tocolor(50,50,50, 50), false)
-			dxDrawRectangle((x/2),y-(StaminaBarH*2), ((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
-			dxDrawRectangle((x/2),y-(StaminaBarH*2), -((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
+			if(getPedOccupiedVehicle(thePlayer)) then
+				dxDrawRectangle((x/2)-(StaminaBarW/2),y-(StaminaBarH*2), StaminaBarW, StaminaBarH, tocolor(50,50,50, 50), false)
+				dxDrawRectangle((x/2),y-(StaminaBarH*2), ((getElementData(localPlayer, "Rage")/1000)*(StaminaBarW/2)), StaminaBarH, tocolor(255,165,0, 150), false)
+				dxDrawRectangle((x/2),y-(StaminaBarH*2), -((getElementData(localPlayer, "Rage")/1000)*(StaminaBarW/2)), StaminaBarH, tocolor(255,165,0, 150), false)
+			else
+				dxDrawRectangle((x/2)-(StaminaBarW/2),y-(StaminaBarH*2), StaminaBarW, StaminaBarH, tocolor(50,50,50, 50), false)
+				dxDrawRectangle((x/2),y-(StaminaBarH*2), ((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
+				dxDrawRectangle((x/2),y-(StaminaBarH*2), -((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
+			end
 		end
 	end
 	
