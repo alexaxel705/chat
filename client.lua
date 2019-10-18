@@ -290,21 +290,24 @@ end
 
 
 function openinput()
-	ChatAlpha = 255
-	if(input) then
-		input = false
-		removeEventHandler("onClientCharacter", getRootElement(), outputPressedCharacter)
-		removeEventHandler("onClientKey", root, playerPressedKey)
-		bindKey("t", "down", openinput)
-	else		
-		input = false
-		addEventHandler("onClientCharacter", getRootElement(), outputPressedCharacter)
-		addEventHandler("onClientKey", root, playerPressedKey)
-		unbindKey("t", "down", openinput)
+	if(getElementData(localPlayer, "auth")) then
+		ChatAlpha = 255
+		if(input) then
+			input = false
+			setElementData(localPlayer, "chat", false)
+			removeEventHandler("onClientCharacter", getRootElement(), outputPressedCharacter)
+			removeEventHandler("onClientKey", root, playerPressedKey)
+			bindKey("t", "down", openinput)
+		else		
+			input = false
+			setElementData(localPlayer, "chat", true)
+			addEventHandler("onClientCharacter", getRootElement(), outputPressedCharacter)
+			addEventHandler("onClientKey", root, playerPressedKey)
+			unbindKey("t", "down", openinput)
+		end
 	end
 end
 bindKey("t", "down", openinput)
-
 
 
 
@@ -315,14 +318,6 @@ function remotePlayerJoin()
 	Avatars[getPlayerName(source)] = nil
 end
 addEventHandler("onClientPlayerJoin", getRootElement(), remotePlayerJoin)
-
-
-
-
-
-
-
-
 
 
 
@@ -376,9 +371,10 @@ function PlayerSpawn()
 end
 addEventHandler("onClientPlayerSpawn", getLocalPlayer(), PlayerSpawn)
 
+
 function Start()
 	UpdateTargets()
-	if(not isPedDead(localPlayer)) then
+	if(getElementData(localPlayer, "auth")) then
 		PlayerSpawn()
 	end
 end
