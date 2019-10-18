@@ -398,7 +398,7 @@ function DrawStaminaBar()
 			local alpha = 255-(dist*5)
 			if(alpha >= 0) then
 				if(not RenderTargets[thePlayer]) then
-					RenderTargets[thePlayer] = {false, 400, 70, true}
+					RenderTargets[thePlayer] = {false, 800, 70, true}
 				end
 				dxDrawImage(sx-((RenderTargets[thePlayer][2])/2),sy-((RenderTargets[thePlayer][3])/2), RenderTargets[thePlayer][2], RenderTargets[thePlayer][3], DrawNicknameBar(thePlayer), 0, 0, 0, tocolor(255,255,255,alpha))
 			end
