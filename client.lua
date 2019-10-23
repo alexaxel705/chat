@@ -186,6 +186,7 @@ addCommandHandler("kill", Execute)
 addCommandHandler("dm", Execute)
 addCommandHandler("tp", Execute)
 addCommandHandler("dance", Execute)
+addCommandHandler("arm", Execute)
 
 
 
