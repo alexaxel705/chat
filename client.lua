@@ -332,7 +332,6 @@ function getMaxStamina()
 end
 
 local Stamina = false
-local LVLUPSTAMINA = 10
 local ShakeLVL = 0
 setCameraShakeLevel(0)
 local PlayersAction = {}
@@ -344,16 +343,8 @@ local timersAction = {}
 function checkKey()
 	if(getPedControlState(localPlayer, "sprint")) and Stamina ~= 0 then
 		Stamina = Stamina-0.1
-		if(getPedStat(localPlayer, 22) ~= 1000) then
-			LVLUPSTAMINA = LVLUPSTAMINA-0.1
-			if(LVLUPSTAMINA == 0) then
-				triggerServerEvent("StaminaOut", localPlayer, true)
-				LVLUPSTAMINA = 10
-			end
-		end
 	end
 	if(Stamina <= 0) then
-		triggerServerEvent("StaminaOut", localPlayer)
 		setPedControlState(localPlayer, "sprint", false)
 	end
 end
