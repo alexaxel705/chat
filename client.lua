@@ -122,7 +122,9 @@ end
 
 
 function avatardraw()
-	dxDrawImage(550*scalex, 580*scaley, RenderTargets["Chat"][2], RenderTargets["Chat"][3], DrawChat(), 0, 0, 0, tocolor(255, 255, 255, ChatAlpha))
+	if(not isChatVisible()) then
+		dxDrawImage(550*scalex, 580*scaley, RenderTargets["Chat"][2], RenderTargets["Chat"][3], DrawChat(), 0, 0, 0, tocolor(255, 255, 255, ChatAlpha))
+	end
 	
 	if(not HiddenChatTimer and not input) then
 		ChatAlpha = ChatAlpha-2
@@ -166,8 +168,7 @@ addEventHandler("OutputChat", getRootElement(), OutputChat)
 function helpcmd(thePlayer)
 	triggerEvent("ToolTip", localPlayer, "/piss - обоссать, /wank - подрочить\r\n"..
 	"/dance [1-13] - танцевать, /arm - служить в армии\r\n"..
-	"/teamleave - покинуть фракцию\r\n"..
-	"/changepass старый пароль новый пароль")
+	"/teamleave - покинуть фракцию\r\n")
 end
 addCommandHandler("cmd", helpcmd)
 addCommandHandler("help", helpcmd)
@@ -291,7 +292,7 @@ end
 
 
 function openinput()
-	if(getElementData(localPlayer, "auth")) then
+	if(getElementData(localPlayer, "auth") and not isChatVisible()) then
 		ChatAlpha = 255
 		if(input) then
 			input = false
@@ -442,16 +443,23 @@ function DrawNicknameBar(thePlayer)
 	local y = RenderTargets[thePlayer][3]*RenderQuality
 	
 	local fh = dxGetFontHeight(scale, "default-bold")
-		
-	if(PlayersAction[thePlayer]) then			
-		dxDrawText(PlayersAction[thePlayer], x,y-(StaminaBarH*3)-(fh*2), 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
-		dxDrawText(PlayersAction[thePlayer], x,y-(StaminaBarH*3)-(fh*2), 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
-	end
+	
+	local CountLine = 1
 	
 	if(getElementType(thePlayer) == "player") then
 		local StaminaBarW, StaminaBarH = StaminaBarW*RenderQuality, StaminaBarH*RenderQuality
-		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y-(StaminaBarH*3)-fh, 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
-		dxDrawText(getPlayerName(thePlayer).."("..getElementData(thePlayer, "id")..")", x,y-(StaminaBarH*3)-fh, 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		
+		local Rang = ""
+		local id = ""
+		if(getKeyState("lalt")) then
+			CountLine = 2
+			local Zvanie = exports["228"]:GetSkinJob(getElementModel(thePlayer))
+			id = " ("..getElementData(thePlayer, "id")..")"
+			Rang = "\r\n#9E9E9E"..utf8.lower(Zvanie)..""
+		end
+		dxDrawText("#FFFFFF"..getPlayerName(thePlayer)..id..Rang, x,y-(StaminaBarH*3)-fh*CountLine, 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText("#FFFFFF"..getPlayerName(thePlayer)..id..Rang, x,y-(StaminaBarH*3)-fh*CountLine, 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		CountLine = CountLine+1
 		if(thePlayer == localPlayer) then
 			local theVehicle = getPedOccupiedVehicle(thePlayer)
 			if(theVehicle) then
@@ -466,10 +474,15 @@ function DrawNicknameBar(thePlayer)
 				dxDrawRectangle((x/2),y-(StaminaBarH*2), -((getElementData(localPlayer, "Rage")/1000)*(StaminaBarW/2)), StaminaBarH, ragecolor, false)
 			else
 				dxDrawRectangle((x/2)-(StaminaBarW/2),y-(StaminaBarH*2), StaminaBarW, StaminaBarH, tocolor(50,50,50, 50), false)
-				dxDrawRectangle((x/2),y-(StaminaBarH*2), ((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
-				dxDrawRectangle((x/2),y-(StaminaBarH*2), -((Stamina/getMaxStamina())*getMaxStamina()*(StaminaBarW/10)), StaminaBarH, tocolor(150,200,0, 150), false)
+				dxDrawRectangle((x/2),y-(StaminaBarH*2), ((Stamina/getMaxStamina())*1000)*(StaminaBarW/2000), StaminaBarH, tocolor(150,200,0, 150), false)
+				dxDrawRectangle((x/2),y-(StaminaBarH*2), -((Stamina/getMaxStamina())*1000)*(StaminaBarW/2000), StaminaBarH, tocolor(150,200,0, 150), false)
 			end
 		end
+	end
+	
+	if(PlayersAction[thePlayer]) then			
+		dxDrawText(PlayersAction[thePlayer], x,y-(StaminaBarH*3)-(fh*(CountLine)), 2,2, tocolor(0,0,0,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
+		dxDrawText(PlayersAction[thePlayer], x,y-(StaminaBarH*3)-(fh*(CountLine)), 0,0, tocolor(255,255,255,255), scale, "default-bold", "center", "top", false,false,false,true,not getElementData(localPlayer, "LowPCMode"))
 	end
 	
 	dxSetBlendMode("blend")
