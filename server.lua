@@ -1,4 +1,5 @@
-﻿local help = {}
+﻿local SkinData = exports["228"]:GetSkinData()
+local help = {}
 local MainChat = {}
 local Zones = {
 	[1] = createColRectangle(1441, -1721, 77, 117),
@@ -144,9 +145,12 @@ function ResultGet()
 
 end
 
-function CallBackGovorilka(thePlayer, voice, gg)
-	if(thePlayer) then
-		triggerClientEvent(getPlayerFromName(thePlayer), "PlaySound", getPlayerFromName(thePlayer), "http://109.227.228.4/engine/include/MTA/"..gg.."/"..md5(utf8.upper(voice))..".wav")
+function CallBackGovorilka(thePlayers, voice, gg)
+	if(thePlayers) then
+		thePlayers = fromJSON(thePlayers)
+		for _, thePlayer in pairs(thePlayers) do
+			triggerClientEvent(getPlayerFromName(thePlayer), "PlaySound", getPlayerFromName(thePlayer), "http://109.227.228.4/engine/include/MTA/"..gg.."/"..md5(utf8.upper(voice))..".wav")
+		end
 	end
 end
 
@@ -177,12 +181,14 @@ function onPlayerChat(message, messageType, messagenovision)
 					OutputChat(CallTo, "["..getElementData(source, "id").."] "..getPlayerName(source)..": "..message, "Phone")
 				end
 				
-				CheckVoice(source, message, "gg")
-				triggerClientEvent(source, "PlaySound", source, "http://109.227.228.4/engine/include/MTA/gg/"..md5(utf8.upper(message))..".wav")
-				
-				CheckVoice(CallTo, message, "dg")
-				triggerClientEvent(CallTo, "PlaySound", CallTo, "http://109.227.228.4/engine/include/MTA/dg/"..md5(utf8.upper(message))..".wav")
-				
+				local voice = "gg"
+				if(SkinData[getElementModel(source)][3] == "Женщина") then 
+					voice = "dg" 
+				end
+				CheckVoice({getPlayerName(source), getPlayerName(CallTo)}, message, voice, true)
+				triggerClientEvent(source, "PlaySound", source, "http://109.227.228.4/engine/include/MTA/"..voice.."/"..md5(utf8.upper(message))..".wav")
+				triggerClientEvent(CallTo, "PlaySound", CallTo, "http://109.227.228.4/engine/include/MTA/"..voice.."/"..md5(utf8.upper(message))..".wav")
+
 				cancelEvent()
 				return true
 			else
@@ -191,13 +197,13 @@ function onPlayerChat(message, messageType, messagenovision)
 					for id, player in ipairs(getElementsByType("player")) do
 						local x2, y2, z2 = getElementPosition(player)
 						local dist = getDistanceBetweenPoints3D(x, y, z, x2, y2, z2)
-						if dist <= 20 then
+						if dist <= 50 then
 							triggerClientEvent(player, "PlayerActionEvent", player, message, source)
 							
 							if(not messagenovision) then -- Для действий
 								OutputChat(player, message, source)
 								if(not help[source]) then
-									triggerClientEvent(source, "ToolTip", source, "#CCCCCCCообщения видны в радиусе 20м\nОбщий чат доступен в зонах отдыха")
+									triggerClientEvent(source, "ToolTip", source, "#CCCCCCCообщения видны в радиусе 50м\nОбщий чат доступен в зонах отдыха")
 									help[source] = true
 								end
 							end
@@ -387,9 +393,9 @@ end
 addEventHandler("onElementDataChange", root, checkChange)
 
 
-function CheckVoice(thePlayer, voice, voicebank)
+function CheckVoice(thePlayers, voice, voicebank, writestatistic)
 	if(string.sub(voice, 0, 1) ~= "[") then
-		callRemote("http://109.227.228.4/engine/include/MTA/govorilka.php", CallBackGovorilka, getPlayerName(thePlayer), utf8.upper(voice), voicebank)
+		callRemote("http://109.227.228.4/engine/include/MTA/govorilka.php", CallBackGovorilka, toJSON(thePlayers), utf8.upper(voice), voicebank, writestatistic)
 	end
 end
 addEvent("CheckVoice", true)
